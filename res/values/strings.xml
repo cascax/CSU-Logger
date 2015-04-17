@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Loginer</string>
+    <string name="text_account">账户</string>
+    <string name="text_password">密码</string>
+    <string name="text_ip">IP</string>
+    <string name="btn_text_submit">提交</string>
+    <string name="btn_text_ip">获取IP</string>
+    <string name="action_settings">Settings</string>
+
+</resources>

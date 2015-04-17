@@ -1,0 +1,105 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp"
+    tools:context="com.example.helloandroid.MainActivity" >
+
+    <Spinner
+        android:id="@+id/spinner_method"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/spinner_method" />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp" >
+        
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/text_account"
+            android:textSize="20sp" />
+
+	    <EditText
+	        android:id="@+id/edit_account"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:ems="10"
+	        android:inputType="text"
+	        android:textSize="20sp" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp" >
+        
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/text_password"
+            android:textSize="20sp" />
+
+	    <EditText
+	        android:id="@+id/edit_password"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:ems="10"
+	        android:inputType="textPassword"
+	        android:textSize="20sp" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp" >
+        
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/text_ip"
+            android:textSize="20sp" />
+
+	    <EditText
+	        android:id="@+id/edit_ip"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:ems="10"
+	        android:inputType="text"
+	        android:textSize="20sp" />
+	    
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="10dp" >
+	    
+		<Button
+		    android:id="@+id/btn_ip"
+		    android:layout_width="110dp"
+		    android:layout_height="60dp"
+		    android:padding="10dp"
+		    android:text="@string/btn_text_ip"
+		    android:textSize="20sp" />
+		
+	    <Button
+	        android:id="@+id/btn_submit"
+	        android:layout_width="110dp"
+	        android:layout_height="60dp"
+	        android:padding="10dp"
+	        android:text="@string/btn_text_submit"
+	        android:textSize="20sp" />
+	    
+	</LinearLayout>
+
+</LinearLayout>
