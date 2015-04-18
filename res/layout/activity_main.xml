@@ -90,7 +90,8 @@
 		    android:layout_height="60dp"
 		    android:padding="10dp"
 		    android:text="@string/btn_text_ip"
-		    android:textSize="20sp" />
+		    android:textSize="20sp"
+		    android:onClick="getIP" />
 		
 	    <Button
 	        android:id="@+id/btn_submit"
