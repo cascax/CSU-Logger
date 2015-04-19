@@ -1,30 +1,21 @@
 package xyz.codeme.szzn.http;
 
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 /**
@@ -66,7 +57,7 @@ public class HttpUtils
 	private String routerReferer = "";
 	private String routerCookie = "";
 	private String routerReg = "";
-	private String session;
+	private String session = "";
 	private int errorCode = NO_ERROR;
 	private String log = "";
 	private boolean ifConnected = false;
@@ -131,6 +122,8 @@ public class HttpUtils
                 				log = parseCode(resultCode);
                 				ifConnected = true;
                 				showToast(R.string.success_login);
+                				if(session.length() > 0)
+                					getInformation();
                 				return;
                 			}
                 			errorCode = ERROR_LOGIN;
@@ -353,6 +346,7 @@ public class HttpUtils
                     @Override
                     public void onResponse(String content) {
                     	AccountInfo account = new AccountInfo(content);
+                    	showAccountInformation(account);
                     }
                 },
                 new Response.ErrorListener() {
@@ -364,6 +358,20 @@ public class HttpUtils
                 });
 		request.setHeaders(headers.build());
         requestQueue.add(request);
+	}
+	/**
+	 * 展示账户信息
+	 * @param account
+	 */
+	private void showAccountInformation(AccountInfo account)
+	{
+		activity.getInfoAccount().setText(account.getUser());
+		activity.getInfoRemained().setText(Double.toString(account.getPublicRemained()) + "MB");
+		activity.getInfoUsed().setText(Double.toString(account.getPublicUsed()) + "MB");
+		activity.getInfoTotal().setText(Double.toString(account.getPublicTotal()) + "MB");
+		activity.getInfoMoney().setText(Double.toString(account.getAccount()));
+		activity.getInfoSchoolUsed().setText(Double.toString(account.getSchoolUsed()) + "MB");
+		activity.getInfoTime().setText(account.getTime());
 	}
 	/**
 	 * 从数字中南获取IP
@@ -381,13 +389,15 @@ public class HttpUtils
                 			ifConnected = true;
                 			if(routerURL.length() > 0)
                 				getIPFromRouter();
+                			return;
                 		}
                 		
                 		Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
                 			activity.getEditIP().setText(match.group(0));
-                		errorCode = ERROR_NOIP_FROM_SERVER;
+                		else
+                			errorCode = ERROR_NOIP_FROM_SERVER;
                     }
                 },
                 new Response.ErrorListener() {
@@ -442,6 +452,7 @@ public class HttpUtils
 		FluentStringRequest request = new FluentStringRequest(
 				Request.Method.GET,
 				HttpUtils.mainUrl,
+				true,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String headers) {

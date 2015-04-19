@@ -7,10 +7,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.TextView;
 
 public class MainActivity extends Activity
 {
@@ -20,6 +19,13 @@ public class MainActivity extends Activity
 	private EditText mEditIP;
 	private EditText mEditAccount;
 	private EditText mEditPassword;
+	private TextView mInfoAccount;
+	private TextView mInfoTime;
+	private TextView mInfoUsed;
+	private TextView mInfoTotal;
+	private TextView mInfoRemained;
+	private TextView mInfoSchoolUsed;
+	private TextView mInfoMoney;
 	
 	private String routerURL;
 	private String routerReferer;
@@ -37,6 +43,14 @@ public class MainActivity extends Activity
 		mEditAccount = (EditText) findViewById(R.id.edit_account);
 		mEditPassword = (EditText) findViewById(R.id.edit_password);
 		mSpinnerMethod = (Spinner) findViewById(R.id.spinner_method);
+		
+		mInfoAccount = (TextView) findViewById(R.id.info_account);
+		mInfoTime = (TextView) findViewById(R.id.info_time);
+		mInfoUsed = (TextView) findViewById(R.id.info_used);
+		mInfoTotal = (TextView) findViewById(R.id.info_total);
+		mInfoRemained = (TextView) findViewById(R.id.info_remained);
+		mInfoSchoolUsed = (TextView) findViewById(R.id.info_schoolused);
+		mInfoMoney = (TextView) findViewById(R.id.info_money);
 		
 		routerURL = "http://192.168.5.1/userRpm/StatusRpm.htm";
 		routerReferer = "http://192.168.5.1/";
@@ -117,5 +131,40 @@ public class MainActivity extends Activity
 	public EditText getEditPassword()
 	{
 		return mEditPassword;
+	}
+
+	public TextView getInfoAccount()
+	{
+		return mInfoAccount;
+	}
+
+	public TextView getInfoTime()
+	{
+		return mInfoTime;
+	}
+
+	public TextView getInfoUsed()
+	{
+		return mInfoUsed;
+	}
+
+	public TextView getInfoTotal()
+	{
+		return mInfoTotal;
+	}
+
+	public TextView getInfoRemained()
+	{
+		return mInfoRemained;
+	}
+
+	public TextView getInfoSchoolUsed()
+	{
+		return mInfoSchoolUsed;
+	}
+
+	public TextView getInfoMoney()
+	{
+		return mInfoMoney;
 	}
 }
