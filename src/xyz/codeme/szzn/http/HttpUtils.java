@@ -54,9 +54,9 @@ public class HttpUtils
 	private final static String logoutUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/logout";
 	private final static String mainUrl = "http://61.137.86.87:8080/portalNat444/index.jsp";
 	private final static String showUrl = "http://61.137.86.87:8080/portalNat444/main2.jsp";
-//	private final static String saveUrl = "http://szzn.sinaapp.com/saveip.php";
-	private final static String saveUrl = "http://192.168.56.1/sz/saveip.php";
-	private final static String getipUrl = "http://192.168.56.1/sz/getip.php";
+	// 192.168.56.1/sz/ szzn.sinaapp.com/ codeme.xyz/api/
+	private final static String saveUrl = "http://codeme.xyz/api/saveip.php";
+	private final static String getipUrl = "http://codeme.xyz/api/getip.php";
 	
 	private final MainActivity activity;
 	RequestQueue requestQueue;
