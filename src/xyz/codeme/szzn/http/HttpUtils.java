@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -115,9 +116,8 @@ public class HttpUtils
 		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在登陆"); 
 		
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
-                Request.Method.POST,
                 HttpUtils.loginUrl,
-                null,
+                form.build(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObj) {
@@ -156,7 +156,6 @@ public class HttpUtils
 						showToast(R.string.error_login);
                     }
                 });
-        jsonRequest.setForm(form.build());
         jsonRequest.setHeaders(headers.build());
         
         requestQueue.add(jsonRequest);
@@ -177,9 +176,8 @@ public class HttpUtils
 		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在登出"); 
 		
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
-                Request.Method.POST,
                 HttpUtils.logoutUrl,
-                null,
+                form.build(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObj) {
@@ -218,7 +216,6 @@ public class HttpUtils
 						showToast(R.string.error_logout);
                     }
                 });
-        jsonRequest.setForm(form.build());
         jsonRequest.setHeaders(headers.build());
         
         requestQueue.add(jsonRequest);
@@ -238,15 +235,13 @@ public class HttpUtils
 	
 	/**
 	 * 获取IP地址
-	 * @return
 	 */
-	public String getIP()
+	public void getIP()
 	{
 		switch(this.ipAccessMethod)
 		{
-			case IP_FROM_SERVER: return getIPFromServer();
-			case IP_FROM_ROUTER: return getIPFromRouter();
-			default: return null;
+			case IP_FROM_SERVER: getIPFromServer();
+			case IP_FROM_ROUTER: getIPFromRouter();
 		}
 	}
 	/**
@@ -261,9 +256,8 @@ public class HttpUtils
 				.add("ip", IP);
 		
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
-                Request.Method.POST,
                 HttpUtils.saveUrl,
-                null,
+                form.build(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObj) {
@@ -282,19 +276,24 @@ public class HttpUtils
                     @Override
                     public void onErrorResponse(VolleyError arg0) {}
                 });
-        jsonRequest.setForm(form.build());
         
         requestQueue.add(jsonRequest);
 	}
 
+	/**
+	 * 获取上次登录IP
+	 * @param user
+	 */
 	public void getLastIP(String user)
 	{
+		KeyValuePairs form = KeyValuePairs.create()
+				.add("user", user);
+		
 		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在获取"); 
 		
-		JsonObjectRequest jsonRequest = new JsonObjectRequest(
-                Request.Method.POST,
+		FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.getipUrl,
-                null,
+                form.build(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObj) {
@@ -304,6 +303,7 @@ public class HttpUtils
                 			if(resultCode == 0)
                 			{
                 				String ip = jsonObj.getString("ip");
+//                				String time = jsonObj.getString("time");
                 				activity.getEditIP().setText(ip);
                 			}
                 			else
@@ -329,135 +329,106 @@ public class HttpUtils
                         	progressDialog.dismiss();
 						showToast(R.string.error_ip);
                     }
-                }){
-			@Override
-			protected Map<String, String> getParams() throws AuthFailureError
-			{
-				Map<String, String> form = new HashMap<String, String>();
-				form.put("user", "010909122723");
-				return form;
-			}
-		};
+                });
+		
         requestQueue.add(jsonRequest);
 	}
-//	/**
-//	 * 获取上次登录IP
-//	 * @param user
-//	 */
-//	public void getLastIP(String user)
-//	{
-//		KeyValuePairs form = KeyValuePairs.create()
-//				.add("user", user);
-//		
-//		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在获取"); 
-//		
-//		FluentJsonRequest jsonRequest = new FluentJsonRequest(
-//                Request.Method.POST,
-//                HttpUtils.getipUrl,
-//                null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject jsonObj) {
-//                        try
-//						{
-//                			int resultCode = jsonObj.getInt("code");
-//                			if(resultCode == 0)
-//                			{
-//                				String ip = jsonObj.getString("ip"),
-//                						time = jsonObj.getString("time");
-//                				activity.getEditIP().setText(ip);
-//                			}
-//                			else
-//                				log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
-//						}
-//                        catch (JSONException e)
-//						{
-//							e.printStackTrace();
-//							showToast(R.string.error_ip);
-//						}
-//                        finally
-//                        {
-//                        	if (progressDialog.isShowing() && progressDialog != null)
-//                            	progressDialog.dismiss();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError arg0)
-//                    {
-//                    	if (progressDialog.isShowing() && progressDialog != null)
-//                        	progressDialog.dismiss();
-//						showToast(R.string.error_ip);
-//                    }
-//                });
-//        jsonRequest.setForm(form.build());
-//        requestQueue.add(jsonRequest);
-//	}
 	/**
 	 * 获取用户信息
-	 * @return
 	 */
-	public AccountInfo getInformation()
+	public void getInformation()
 	{
-//		KeyValuePairs header = KeyValuePairs.create()
-//				.add("Referer", HttpUtils.mainUrl)
-//				.add("Cookie", "JSESSIONID=" + this.session);
-//		Request request = Request.Get(HttpUtils.showUrl)
-//				.addHeader("Referer", HttpUtils.mainUrl)
-//				.addHeader("Cookie", "JSESSIONID=" + this.session);
-//		String content = this.execute(request);
-//		AccountInfo account = new AccountInfo(content);
-//		return account;
-		AccountInfo account = new AccountInfo("");
-		return account;
+		KeyValuePairs headers = KeyValuePairs.create()
+				.add("Referer", HttpUtils.mainUrl)
+				.add("Cookie", "JSESSIONID=" + this.session);
+		
+		FluentStringRequest request = new FluentStringRequest(
+				Request.Method.GET,
+				HttpUtils.showUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String content) {
+                    	AccountInfo account = new AccountInfo(content);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0)
+                    {
+						showToast(R.string.error_account);
+                    }
+                });
+		request.setHeaders(headers.build());
+        requestQueue.add(request);
 	}
 	/**
 	 * 从数字中南获取IP
-	 * @return
 	 */
-	private String getIPFromServer()
+	private void getIPFromServer()
 	{
-//		Request request = Request.Get("http://wap.baidu.com")
+		FluentStringRequest request = new FluentStringRequest(
+				Request.Method.GET,
+				"http://wap.baidu.com",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String content) {
+                    	if(content.indexOf("百度") > 0) // 当前在线
+                		{
+                			ifConnected = true;
+                			if(routerURL.length() > 0)
+                				getIPFromRouter();
+                		}
+                		
+                		Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+                		Matcher match = pattern.matcher(content);
+                		if(match.find())
+                			activity.getEditIP().setText(match.group(0));
+                		errorCode = ERROR_NOIP_FROM_SERVER;
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0)
+                    {
+						showToast(R.string.error_ip);
+                    }
+                });
+
+        requestQueue.add(request);
+        
 //				.connectTimeout(1000)
 //                .socketTimeout(1000);
-//		String content = this.execute(request);
-//		
-//		if(content.indexOf("百度") > 0) // 当前在线
-//		{
-//			this.ifConnected = true;
-//			if(this.routerURL.length() > 0)
-//				return this.getIPFromRouter();
-//			return "";
-//		}
-//		
-//		Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
-//		Matcher match = pattern.matcher(content);
-//		if(match.find())
-//			return match.group(0);
-//		this.errorCode = ERROR_NOIP_FROM_SERVER;
-		return "";
 	}
 	/**
 	 * 根据配置从路由器web管理页面获取当前IP
-	 * @return
 	 */
-	private String getIPFromRouter()
+	private void getIPFromRouter()
 	{
-//		KeyValuePairs headers = KeyValuePairs.create()
-//				.add("Referer", this.routerReferer)
-//				.add("Cookie", this.routerCookie);
-//		Request request = Request.Get(this.routerURL)
-//				.addHeader("Referer", this.routerReferer)
-//				.addHeader("Cookie", this.routerCookie);
-//		
-//		String content = this.execute(request);
-//		Pattern pattern = Pattern.compile(this.routerReg);
-//		Matcher match = pattern.matcher(content);
-//		if(match.find())
-//			return match.group(0);
-//		this.errorCode = ERROR_NOIP_FROM_ROUTER;
-		return "";
+		KeyValuePairs headers = KeyValuePairs.create()
+				.add("Referer", this.routerReferer)
+				.add("Cookie", this.routerCookie);
+		FluentStringRequest request = new FluentStringRequest(
+				Request.Method.GET,
+				this.routerURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String content) {
+                    	Pattern pattern = Pattern.compile(routerReg);
+                		Matcher match = pattern.matcher(content);
+                		if(match.find())
+                			activity.getEditIP().setText(match.group(0));
+                		errorCode = ERROR_NOIP_FROM_ROUTER;
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0)
+                    {
+						showToast(R.string.error_ip);
+                    }
+                });
+		request.setHeaders(headers.build());
+        requestQueue.add(request);
 	}
 	/**
 	 * 获取整个过程session
@@ -487,35 +458,7 @@ public class HttpUtils
 //		}
 		return session;
 	}
-	/**
-	 * 执行request
-	 * @param request
-	 * @return
-	 */
-//	private String execute(Request request)
-//	{
-//		String result = "";
-//		try
-//		{
-//			result = executor.execute(request).returnContent().asString();
-//		} catch (ConnectTimeoutException e)
-//		{
-//			return "{\"resultCode\":\"19\"}";
-//		} catch (ClientProtocolException e)
-//		{
-//			e.printStackTrace();
-//		} catch (SocketTimeoutException e)
-//		{
-//			return "{\"resultCode\":\"18\"}";
-//		} catch (SocketException e)
-//		{
-//			return "{\"resultCode\":\"19\"}";
-//		} catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		return result;
-//	}
+	
 	/**
 	 * 显示Toast
 	 * @param resourceId
@@ -524,6 +467,7 @@ public class HttpUtils
 	{
 		Toast.makeText(activity, resourceId, Toast.LENGTH_SHORT).show();
 	}
+	
 	/**
 	 * 解析json中code含义
 	 * @param code

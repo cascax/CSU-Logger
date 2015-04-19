@@ -10,14 +10,15 @@
     <string name="text_loading">正在获取</string>
     
     <string name="btn_text_submit">提交</string>
-    <string name="btn_text_ip">获取IP</string>
+    <string name="btn_text_ip">获取上次登录IP</string>
     <string name="action_settings">设置</string>
     
     <string name="success_login">获取失败</string>
     <string name="success_logout">获取失败</string>
     
-    <string name="error_ip">获取失败</string>
+    <string name="error_ip">获取IP失败</string>
     <string name="error_login">登陆失败</string>
     <string name="error_logout">下线失败</string>
+    <string name="error_account">获取账户失败</string>
     
 </resources>

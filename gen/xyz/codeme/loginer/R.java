@@ -47,6 +47,7 @@ public final class R {
         public static final int app_name=0x7f060000;
         public static final int btn_text_ip=0x7f060007;
         public static final int btn_text_submit=0x7f060006;
+        public static final int error_account=0x7f06000e;
         public static final int error_ip=0x7f06000b;
         public static final int error_login=0x7f06000c;
         public static final int error_logout=0x7f06000d;

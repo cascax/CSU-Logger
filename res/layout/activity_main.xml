@@ -86,12 +86,12 @@
 	    
 		<Button
 		    android:id="@+id/btn_ip"
-		    android:layout_width="110dp"
+		    android:layout_width="165dp"
 		    android:layout_height="60dp"
+		    android:onClick="getIP"
 		    android:padding="10dp"
 		    android:text="@string/btn_text_ip"
-		    android:textSize="20sp"
-		    android:onClick="getIP" />
+		    android:textSize="20sp" />
 		
 	    <Button
 	        android:id="@+id/btn_submit"

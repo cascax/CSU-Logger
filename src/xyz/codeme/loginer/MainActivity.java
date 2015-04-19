@@ -55,6 +55,7 @@ public class MainActivity extends Activity
 		routerReg = "10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
 		http = new HttpUtils(this);
 		http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+		http.getIP();
 	}
 	
 	public void submit(View view)
