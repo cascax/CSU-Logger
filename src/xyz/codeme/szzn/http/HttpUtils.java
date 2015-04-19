@@ -16,6 +16,7 @@ import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -74,7 +75,7 @@ public class HttpUtils
 	{
 		this.activity = activity;
 		this.requestQueue = Volley.newRequestQueue(activity);
-		session = this.getSession();
+		this.RefreshSession();
 	}
 	/**
 	 * 路由器配置
@@ -133,7 +134,9 @@ public class HttpUtils
                 				return;
                 			}
                 			errorCode = ERROR_LOGIN;
-                			log = parseCode(resultCode) + "," + jsonObj.getString("resultDescribe");
+                			log = "Login:" + parseCode(resultCode) + "," + jsonObj.getString("resultDescribe");
+                			showToast(R.string.error_login);
+                			Log.w(MainActivity.TAG, log);
 						}
                         catch (JSONException e)
 						{
@@ -194,6 +197,7 @@ public class HttpUtils
                 			}
                 			errorCode = ERROR_LOGOUT;
                 			log = parseCode(resultCode) + "," + jsonObj.getString("resultDescribe");
+                			showToast(R.string.error_logout);
 						}
                         catch (JSONException e)
 						{
@@ -228,7 +232,7 @@ public class HttpUtils
 	 */
 	public void relogin(String user, String password, String IP)
 	{
-		session = this.getSession();
+		this.RefreshSession();
 		logout(IP);
 		login(user, password, IP);
 	}
@@ -432,31 +436,29 @@ public class HttpUtils
 	}
 	/**
 	 * 获取整个过程session
-	 * @return
 	 */
-	private String getSession()
+	private void RefreshSession()
 	{
-//		Request request = Request.Head(HttpUtils.mainUrl);
-		String session = "";
-//		try
-//		{
-//			HttpResponse response = executor.execute(request).returnResponse();
-//			Header[] headers = response.getHeaders("Set-Cookie");
-//			if(headers.length == 1)
-//			{
-//				Pattern pattern = Pattern.compile("JSESSIONID=([^;]+);");
-//				Matcher match = pattern.matcher(headers[0].getValue());
-//				if(match.find())
-//					session = match.group(1);
-//			}
-//		} catch (ClientProtocolException e)
-//		{
-//			e.printStackTrace();
-//		} catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
-		return session;
+		FluentStringRequest request = new FluentStringRequest(
+				Request.Method.GET,
+				HttpUtils.mainUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String headers) {
+        				Pattern pattern = Pattern.compile("JSESSIONID=([^;]+);");
+        				Matcher match = pattern.matcher(headers);
+        				if(match.find())
+        					session = match.group(1);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0)
+                    {
+						showToast(R.string.error_ip);
+                    }
+                });
+        requestQueue.add(request);
 	}
 	
 	/**

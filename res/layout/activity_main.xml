@@ -99,7 +99,8 @@
 	        android:layout_height="60dp"
 	        android:padding="10dp"
 	        android:text="@string/btn_text_submit"
-	        android:textSize="20sp" />
+	        android:textSize="20sp"
+	        android:onClick="submit" />
 	    
 	</LinearLayout>
 

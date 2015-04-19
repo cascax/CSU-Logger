@@ -1,19 +1,8 @@
 package xyz.codeme.loginer;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import xyz.codeme.szzn.http.HttpUtils;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
+import xyz.codeme.szzn.rsa.RSAEncrypt;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,8 +14,8 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity
 {
-	private Button mButtonSubmit;
-	private Button mButtonGetIP;
+	public static String TAG = "LoginerMain";
+	
 	private Spinner mSpinnerMethod;
 	private EditText mEditIP;
 	private EditText mEditAccount;
@@ -60,7 +49,32 @@ public class MainActivity extends Activity
 	
 	public void submit(View view)
 	{
+		int selected = (int) mSpinnerMethod.getSelectedItemId();
+		String account, password, ip;
+		account = mEditAccount.getText().toString();
+		password = mEditPassword.getText().toString();
+		password = RSAEncrypt.newInstance().encryptedString(password);
+		ip = mEditIP.getText().toString();
 		
+		switch(selected)
+		{
+			case 0:
+				http.logout(ip);
+				http.login(account, password, ip);
+				break;
+			case 1:
+				http.login(account, password, ip);
+				break;
+			case 2:
+				http.logout(ip);
+				break;
+			case 3:
+				http.login(account, password, ip);
+				break;
+			case 4:
+				http.logout(ip);
+				break;
+		}
 	}
 	
 	public void getIP(View view)

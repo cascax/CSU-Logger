@@ -13,8 +13,8 @@
     <string name="btn_text_ip">获取上次登录IP</string>
     <string name="action_settings">设置</string>
     
-    <string name="success_login">获取失败</string>
-    <string name="success_logout">获取失败</string>
+    <string name="success_login">登陆成功</string>
+    <string name="success_logout">登出成功</string>
     
     <string name="error_ip">获取IP失败</string>
     <string name="error_login">登陆失败</string>
