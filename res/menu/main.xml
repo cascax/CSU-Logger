@@ -3,6 +3,11 @@
     tools:context="xyz.codeme.loginer.MainActivity" >
 
     <item
+        android:id="@+id/action_ip"
+        android:orderInCategory="99"
+        android:showAsAction="never"
+        android:title="@string/action_ip"/>
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"

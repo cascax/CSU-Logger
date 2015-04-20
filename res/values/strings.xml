@@ -19,15 +19,18 @@
     <string name="text_loading">正在获取</string>
     
     <string name="btn_text_submit">提交</string>
-    <string name="btn_text_ip">获取上次登录IP</string>
+    <string name="btn_ok">确定</string>
+    <string name="btn_ip">重新获取IP</string>
+    <string name="action_ip">获取上次登录IP</string>
     <string name="action_settings">设置</string>
     
     <string name="success_login">登陆成功</string>
-    <string name="success_logout">登出成功</string>
+    <string name="success_logout">下线成功</string>
     
     <string name="error_ip">获取IP失败</string>
     <string name="error_login">登陆失败</string>
     <string name="error_logout">下线失败</string>
-    <string name="error_account">获取账户失败</string>
+    <string name="error_account">获取账户信息失败</string>
+    <string name="msg_online">你已经在线</string>
     
 </resources>

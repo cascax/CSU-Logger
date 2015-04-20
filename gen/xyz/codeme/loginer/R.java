@@ -28,21 +28,20 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f09000e;
-        public static final int btn_ip=0x7f09000d;
-        public static final int btn_submit=0x7f09000c;
-        public static final int edit_account=0x7f090009;
-        public static final int edit_ip=0x7f09000b;
-        public static final int edit_password=0x7f09000a;
-        public static final int info_account=0x7f090001;
-        public static final int info_money=0x7f090004;
-        public static final int info_remained=0x7f090003;
-        public static final int info_schoolused=0x7f090005;
-        public static final int info_time=0x7f090007;
-        public static final int info_total=0x7f090006;
-        public static final int info_used=0x7f090002;
-        public static final int scrollView1=0x7f090000;
-        public static final int spinner_method=0x7f090008;
+        public static final int action_ip=0x7f09000c;
+        public static final int action_settings=0x7f09000d;
+        public static final int btn_submit=0x7f09000b;
+        public static final int edit_account=0x7f090008;
+        public static final int edit_ip=0x7f09000a;
+        public static final int edit_password=0x7f090009;
+        public static final int info_account=0x7f090000;
+        public static final int info_money=0x7f090003;
+        public static final int info_remained=0x7f090002;
+        public static final int info_schoolused=0x7f090004;
+        public static final int info_time=0x7f090006;
+        public static final int info_total=0x7f090005;
+        public static final int info_used=0x7f090001;
+        public static final int spinner_method=0x7f090007;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -51,14 +50,16 @@ public final class R {
         public static final int main=0x7f080000;
     }
     public static final class string {
-        public static final int action_settings=0x7f06000f;
+        public static final int action_ip=0x7f060010;
+        public static final int action_settings=0x7f060011;
         public static final int app_name=0x7f060000;
-        public static final int btn_text_ip=0x7f06000e;
+        public static final int btn_ip=0x7f06000f;
+        public static final int btn_ok=0x7f06000e;
         public static final int btn_text_submit=0x7f06000d;
-        public static final int error_account=0x7f060015;
-        public static final int error_ip=0x7f060012;
-        public static final int error_login=0x7f060013;
-        public static final int error_logout=0x7f060014;
+        public static final int error_account=0x7f060017;
+        public static final int error_ip=0x7f060014;
+        public static final int error_login=0x7f060015;
+        public static final int error_logout=0x7f060016;
         public static final int info_account=0x7f060004;
         public static final int info_money=0x7f06000a;
         public static final int info_remained=0x7f060008;
@@ -66,8 +67,9 @@ public final class R {
         public static final int info_time=0x7f060005;
         public static final int info_total=0x7f060006;
         public static final int info_used=0x7f060007;
-        public static final int success_login=0x7f060010;
-        public static final int success_logout=0x7f060011;
+        public static final int msg_online=0x7f060018;
+        public static final int success_login=0x7f060012;
+        public static final int success_logout=0x7f060013;
         public static final int text_account=0x7f060001;
         public static final int text_ip=0x7f060003;
         public static final int text_loading=0x7f06000c;

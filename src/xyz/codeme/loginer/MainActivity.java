@@ -3,6 +3,7 @@ package xyz.codeme.loginer;
 import xyz.codeme.szzn.http.HttpUtils;
 import xyz.codeme.szzn.rsa.RSAEncrypt;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,11 +28,8 @@ public class MainActivity extends Activity
 	private TextView mInfoSchoolUsed;
 	private TextView mInfoMoney;
 	
-	private String routerURL;
-	private String routerReferer;
-	private String routerCookie;
-	private String routerReg;
 	private HttpUtils http;
+	private SharedPreferences preferences;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -52,12 +50,23 @@ public class MainActivity extends Activity
 		mInfoSchoolUsed = (TextView) findViewById(R.id.info_schoolused);
 		mInfoMoney = (TextView) findViewById(R.id.info_money);
 		
-		routerURL = "http://192.168.5.1/userRpm/StatusRpm.htm";
-		routerReferer = "http://192.168.5.1/";
-		routerCookie = "Authorization=Basic%20YWRtaW46ODYyNjMzOQ%3D%3D";
-		routerReg = "10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
+		preferences = this.getBaseContext().getSharedPreferences("setting", MODE_PRIVATE);
+		
+		mEditAccount.setText(preferences.getString("user", ""));
+		mEditPassword.setText(preferences.getString("password", ""));
+		
+		String routerURL = preferences.getString("routerURL", ""); //"http://192.168.5.1/userRpm/StatusRpm.htm";
+		String routerReferer = preferences.getString("routerReferer", ""); //"http://192.168.5.1/";
+		String routerCookie = preferences.getString("routerCookie", ""); //"Authorization=Basic%20YWRtaW46ODYyNjMzOQ%3D%3D";
+		String routerReg = preferences.getString("routerReg", ""); //"10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
 		http = new HttpUtils(this);
-		http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+		if(routerURL.length() > 0)
+			http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+		http.getIP();
+	}
+	
+	public void refreshIP(View view)
+	{
 		http.getIP();
 	}
 	
@@ -82,18 +91,7 @@ public class MainActivity extends Activity
 			case 2:
 				http.logout(ip);
 				break;
-			case 3:
-				http.login(account, password, ip);
-				break;
-			case 4:
-				http.logout(ip);
-				break;
 		}
-	}
-	
-	public void getIP(View view)
-	{
-		http.getLastIP("010909122723");
 	}
 	
 	@Override
@@ -111,9 +109,13 @@ public class MainActivity extends Activity
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings)
+		switch (id)
 		{
-			return true;
+			case R.id.action_settings:
+				return true;
+			case R.id.action_ip:
+				http.getLastIP("010909122723");
+				return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -166,5 +168,10 @@ public class MainActivity extends Activity
 	public TextView getInfoMoney()
 	{
 		return mInfoMoney;
+	}
+
+	public SharedPreferences getPreferences()
+	{
+		return preferences;
 	}
 }

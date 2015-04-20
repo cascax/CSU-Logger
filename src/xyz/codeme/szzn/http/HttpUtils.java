@@ -8,7 +8,12 @@ import org.json.JSONObject;
 
 import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.res.Resources;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,7 +26,7 @@ import com.android.volley.toolbox.Volley;
 /**
  * 数字中南登陆网络交互类
  * 
- * 首先获取IP，根据用户名/加密后的密码/IP，可登陆/登出/重新登陆(先登出再登陆)。
+ * 首先获取IP，根据用户名/加密后的密码/IP，可登陆/下线/重新登陆(先下线再登陆)。
  * session为内部管理，过期后重登即可重新获取。
  * 登陆操作后可获取账户信息。
  * 
@@ -58,7 +63,6 @@ public class HttpUtils
 	private String routerCookie = "";
 	private String routerReg = "";
 	private String session = "";
-	private int errorCode = NO_ERROR;
 	private String log = "";
 	private boolean ifConnected = false;
 
@@ -118,7 +122,6 @@ public class HttpUtils
                 			int resultCode = jsonObj.getInt("resultCode");
                 			if(resultCode == 0)
                 			{
-                				errorCode = NO_ERROR;
                 				log = parseCode(resultCode);
                 				ifConnected = true;
                 				showToast(R.string.success_login);
@@ -126,14 +129,13 @@ public class HttpUtils
                 					getInformation();
                 				return;
                 			}
-                			errorCode = ERROR_LOGIN;
-                			log = "Login:" + parseCode(resultCode) + "," + jsonObj.getString("resultDescribe");
-                			showToast(R.string.error_login);
-                			Log.w(MainActivity.TAG, log);
+                			log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
+                			showMessage(R.string.error_login, log);
+                			Log.e(MainActivity.TAG, "Login:" + log);
 						}
                         catch (JSONException e)
 						{
-							e.printStackTrace();
+							Log.e(MainActivity.TAG, "login:json error");
 							showToast(R.string.error_login);
 						}
                         finally
@@ -150,6 +152,7 @@ public class HttpUtils
                     	if (progressDialog.isShowing() && progressDialog != null)
                         	progressDialog.dismiss();
 						showToast(R.string.error_login);
+						Log.e(MainActivity.TAG, "login:connect error");
                     }
                 });
         jsonRequest.setHeaders(headers.build());
@@ -158,7 +161,7 @@ public class HttpUtils
 	}
 	
 	/**
-	 * 登出
+	 * 下线
 	 * @param IP
 	 */
 	public void logout(String IP)
@@ -169,7 +172,7 @@ public class HttpUtils
 		KeyValuePairs headers = KeyValuePairs.create()
 				.add("Referer", HttpUtils.showUrl);
 		
-		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在登出"); 
+		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在下线"); 
 		
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.logoutUrl,
@@ -182,19 +185,18 @@ public class HttpUtils
                 			int resultCode = jsonObj.getInt("resultCode");
                 			if(resultCode == 0)
                 			{
-                				errorCode = NO_ERROR;
                 				log = parseCode(resultCode);
                 				ifConnected = false;
                 				showToast(R.string.success_logout);
                 				return;
                 			}
-                			errorCode = ERROR_LOGOUT;
-                			log = parseCode(resultCode) + "," + jsonObj.getString("resultDescribe");
-                			showToast(R.string.error_logout);
+                			log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
+                			showMessage(R.string.error_logout, log);
+                			Log.e(MainActivity.TAG, "logout:" + log);
 						}
                         catch (JSONException e)
 						{
-							e.printStackTrace();
+							Log.e(MainActivity.TAG, "logout:json error");
 							showToast(R.string.error_logout);
 						}
                         finally
@@ -211,6 +213,7 @@ public class HttpUtils
                     	if (progressDialog.isShowing() && progressDialog != null)
                         	progressDialog.dismiss();
 						showToast(R.string.error_logout);
+						Log.e(MainActivity.TAG, "logout:connect error");
                     }
                 });
         jsonRequest.setHeaders(headers.build());
@@ -235,10 +238,20 @@ public class HttpUtils
 	 */
 	public void getIP()
 	{
+		String ip = getIPFromLocal();
+		if(ip != null)
+		{
+			activity.getEditIP().setText(ip);
+			return;
+		}
 		switch(this.ipAccessMethod)
 		{
-			case IP_FROM_SERVER: getIPFromServer();
-			case IP_FROM_ROUTER: getIPFromRouter();
+			case IP_FROM_SERVER:
+				getIPFromServer();
+				break;
+			case IP_FROM_ROUTER:
+				getIPFromRouter();
+				break;
 		}
 	}
 	/**
@@ -261,17 +274,24 @@ public class HttpUtils
                         try
 						{
                 			int resultCode = jsonObj.getInt("code");
-                			if(resultCode == 0)
-                				errorCode = NO_ERROR;
-                			else
+                			if(resultCode != 0)
+                			{
                 				log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
+                				Log.w(MainActivity.TAG, "saveip:" + log);
+                			}
 						}
-                        catch (JSONException e) {}
+                        catch (JSONException e)
+                        {
+                        	Log.e(MainActivity.TAG, "saveip:json error");
+                        }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
-                    public void onErrorResponse(VolleyError arg0) {}
+                    public void onErrorResponse(VolleyError arg0)
+                    {
+                    	Log.e(MainActivity.TAG, "saveip:connect error");
+                    }
                 });
         
         requestQueue.add(jsonRequest);
@@ -304,11 +324,15 @@ public class HttpUtils
                 				activity.getEditIP().setText(ip);
                 			}
                 			else
+                			{
                 				log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
+                				Log.e(MainActivity.TAG, "getlastip:" + log);
+                				showMessage(R.string.error_ip, log);
+                			}
 						}
                         catch (JSONException e)
 						{
-							e.printStackTrace();
+            				Log.e(MainActivity.TAG, "getlastip:json error");
 							showToast(R.string.error_ip);
 						}
                         finally
@@ -324,6 +348,7 @@ public class HttpUtils
                     {
                     	if (progressDialog.isShowing() && progressDialog != null)
                         	progressDialog.dismiss();
+        				Log.e(MainActivity.TAG, "getlastip:connect error");
 						showToast(R.string.error_ip);
                     }
                 });
@@ -366,12 +391,31 @@ public class HttpUtils
 	private void showAccountInformation(AccountInfo account)
 	{
 		activity.getInfoAccount().setText(account.getUser());
-		activity.getInfoRemained().setText(Double.toString(account.getPublicRemained()) + "MB");
-		activity.getInfoUsed().setText(Double.toString(account.getPublicUsed()) + "MB");
-		activity.getInfoTotal().setText(Double.toString(account.getPublicTotal()) + "MB");
+		activity.getInfoRemained().setText(Double.toString(account.getPublicRemained()) + " MB");
+		activity.getInfoUsed().setText(Double.toString(account.getPublicUsed()) + " MB");
+		activity.getInfoTotal().setText(Double.toString(account.getPublicTotal()) + " MB");
 		activity.getInfoMoney().setText(Double.toString(account.getAccount()));
-		activity.getInfoSchoolUsed().setText(Double.toString(account.getSchoolUsed()) + "MB");
+		activity.getInfoSchoolUsed().setText(Double.toString(account.getSchoolUsed()) + " MB");
 		activity.getInfoTime().setText(account.getTime());
+	}
+	/**
+	 * 获取设备当前IP
+	 */
+	private String getIPFromLocal()
+	{
+		WifiManager wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+		if(wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED)
+		{
+			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+			int i = wifiInfo.getIpAddress();
+			if((i & 0xFF) == 10 && ((i >> 8) & 0xFF) == 96)
+			{
+				return "10.96." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
+			}
+			return null;
+		}
+		Log.w(MainActivity.TAG, "local端获取IP失败");
+		return null;
 	}
 	/**
 	 * 从数字中南获取IP
@@ -380,13 +424,14 @@ public class HttpUtils
 	{
 		FluentStringRequest request = new FluentStringRequest(
 				Request.Method.GET,
-				"http://wap.baidu.com",
+				"http://wap.baidu.com/",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String content) {
                     	if(content.indexOf("百度") > 0) // 当前在线
                 		{
                 			ifConnected = true;
+                			showToast(R.string.msg_online);
                 			if(routerURL.length() > 0)
                 				getIPFromRouter();
                 			return;
@@ -397,21 +442,22 @@ public class HttpUtils
                 		if(match.find())
                 			activity.getEditIP().setText(match.group(0));
                 		else
-                			errorCode = ERROR_NOIP_FROM_SERVER;
+                		{
+                			Log.w(MainActivity.TAG, "server端获取IP失败");
+    						showToast(R.string.error_ip);
+                		}
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
+                    	Log.w(MainActivity.TAG, "server端获取IP失败");
 						showToast(R.string.error_ip);
                     }
                 });
 
         requestQueue.add(request);
-        
-//				.connectTimeout(1000)
-//                .socketTimeout(1000);
 	}
 	/**
 	 * 根据配置从路由器web管理页面获取当前IP
@@ -431,13 +477,18 @@ public class HttpUtils
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
                 			activity.getEditIP().setText(match.group(0));
-                		errorCode = ERROR_NOIP_FROM_ROUTER;
+                		else
+                		{
+                			Log.w(MainActivity.TAG, "router端获取IP失败");
+                			showToast(R.string.error_ip);
+                		}
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
+                    	Log.w(MainActivity.TAG, "router端获取IP失败");
 						showToast(R.string.error_ip);
                     }
                 });
@@ -460,13 +511,15 @@ public class HttpUtils
         				Matcher match = pattern.matcher(headers);
         				if(match.find())
         					session = match.group(1);
+        				else
+        					Log.w(MainActivity.TAG, "获取session失败");
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
-						showToast(R.string.error_ip);
+						Log.w(MainActivity.TAG, "获取session失败");
                     }
                 });
         requestQueue.add(request);
@@ -479,6 +532,20 @@ public class HttpUtils
 	private void showToast(int resourceId)
 	{
 		Toast.makeText(activity, resourceId, Toast.LENGTH_SHORT).show();
+	}
+	/**
+	 * 显示消息提示
+	 * @param resourceId
+	 * @param log
+	 */
+	private void showMessage(int resourceId, String log)
+	{
+		Resources res = activity.getResources();
+		new AlertDialog.Builder(activity)
+			.setTitle(res.getString(resourceId))
+			.setMessage(log)
+			.setPositiveButton(R.string.btn_ok, null)
+			.show();
 	}
 	
 	/**
@@ -509,34 +576,9 @@ public class HttpUtils
 			default:return "未知错误";
 		}
 	}
+	
 	/**
-	 * 获取错误信息
-	 * @return
-	 */
-	public String getError()
-	{
-		switch(this.errorCode)
-		{
-			case NO_ERROR:
-				return "";
-			case ERROR_NOIP_FROM_SERVER:
-				return "无法从数字中南获取IP";
-			case ERROR_NOIP_FROM_ROUTER:
-				return "无法从路由器获取IP";
-			case ERROR_NOIP:
-				return "未知原因无法获取IP";
-			case ERROR_IP_CONFIG:
-				return "IP获取配置错误";
-			case ERROR_LOGOUT:
-				return "登出失败";
-			case ERROR_LOGIN:
-				return "登陆失败";
-			default:
-				return "未知错误";
-		}
-	}
-	/**
-	 * 获取登陆/登出日志信息
+	 * 获取登陆/下线日志信息
 	 * @return
 	 */
 	public String getLog()

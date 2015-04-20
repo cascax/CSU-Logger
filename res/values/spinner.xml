@@ -2,8 +2,6 @@
 <resources>
     <string-array name="spinner_method">
         <item>自动重登</item>
-        <item>自动登陆</item>
-        <item>自动下线</item>
         <item>登陆</item>
         <item>下线</item>
     </string-array>
