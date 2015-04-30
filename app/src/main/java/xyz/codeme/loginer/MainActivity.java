@@ -1,15 +1,26 @@
 package xyz.codeme.loginer;
 
 import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
+import xyz.codeme.szzn.http.AccountInfo;
 import xyz.codeme.szzn.http.HttpUtils;
 import xyz.codeme.szzn.rsa.RSAEncrypt;
 
@@ -28,9 +39,12 @@ public class MainActivity extends ActionBarActivity {
     private TextView mInfoRemained;
     private TextView mInfoSchoolUsed;
     private TextView mInfoMoney;
+    private TextView mInfoOutTime;
+    private CheckBox mCheckSave;
 
     private HttpUtils http;
     private SharedPreferences preferences;
+    private long lastLoginTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
         mEditAccount = (EditText) findViewById(R.id.edit_account);
         mEditPassword = (EditText) findViewById(R.id.edit_password);
         mSpinnerMethod = (Spinner) findViewById(R.id.spinner_method);
+        mCheckSave = (CheckBox) findViewById(R.id.check_save);
 
         mInfoAccount = (TextView) findViewById(R.id.info_account);
         mInfoTime = (TextView) findViewById(R.id.info_time);
@@ -49,27 +64,73 @@ public class MainActivity extends ActionBarActivity {
         mInfoRemained = (TextView) findViewById(R.id.info_remained);
         mInfoSchoolUsed = (TextView) findViewById(R.id.info_schoolused);
         mInfoMoney = (TextView) findViewById(R.id.info_money);
+        mInfoOutTime = (TextView) findViewById(R.id.info_outtime);
 
         preferences = this.getBaseContext().getSharedPreferences("setting", MODE_PRIVATE);
 
         mEditAccount.setText(preferences.getString("user", ""));
         mEditPassword.setText(preferences.getString("password", ""));
 
-        String routerURL = preferences.getString("routerURL", ""); //"http://192.168.5.1/userRpm/StatusRpm.htm";
-        String routerReferer = preferences.getString("routerReferer", ""); //"http://192.168.5.1/";
-        String routerCookie = preferences.getString("routerCookie", ""); //"Authorization=Basic%20YWRtaW46ODYyNjMzOQ%3D%3D";
-        String routerReg = preferences.getString("routerReg", ""); //"10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
         http = new HttpUtils(this);
-        if(routerURL.length() > 0)
-            http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+        initRouter();
         http.getIP();
+        intiRestOfTime();
     }
 
+    private void initRouter()
+    {
+        String routerURL = preferences.getString("routerURL", "http://192.168.5.1/userRpm/StatusRpm.htm");
+        if(routerURL.length() == 0) return;
+        String routerReferer = preferences.getString("routerReferer", "http://192.168.5.1/");
+
+        String routerCookie;
+        routerCookie= preferences.getString("routerAdmin", "admin")
+                + ":"
+                + preferences.getString("routerPassword", "123456");
+        routerCookie = Base64.encodeToString(routerCookie.getBytes(), Base64.DEFAULT);
+        try {
+            routerCookie = "Authorization=Basic%20"
+                    + URLEncoder.encode(routerCookie.trim(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, "router端获取IP失败，cookie组合失败");
+            Toast.makeText(this, R.string.error_router, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String routerReg = preferences.getString("routerReg", "10\\.96\\.[1-9]\\d{0,2}\\.\\d{1,3}");
+
+        http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+    }
+
+    private void intiRestOfTime()
+    {
+        lastLoginTime = preferences.getLong("lastLogin", 0);
+        if(lastLoginTime != 0)
+        {
+            showLogoutTime(lastLoginTime);
+        }
+    }
+
+    private void showLogoutTime(long lastLogin)
+    {
+        lastLogin += 43200000;
+        Calendar time = Calendar.getInstance();
+        time.setTimeInMillis(lastLogin);
+        SimpleDateFormat dateFormat;
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        mInfoOutTime.setText(dateFormat.format(time.getTime()));
+    }
+
+    /**
+     * 刷新重新获取IP
+     */
     public void refreshIP(View view)
     {
         http.getIP();
     }
 
+    /**
+     * 提交
+     */
     public void submit(View view)
     {
         int selected = (int) mSpinnerMethod.getSelectedItemId();
@@ -82,8 +143,7 @@ public class MainActivity extends ActionBarActivity {
         switch(selected)
         {
             case 0:
-                http.logout(ip);
-                http.login(account, password, ip);
+                http.relogin(account, password, ip);
                 break;
             case 1:
                 http.login(account, password, ip);
@@ -92,6 +152,36 @@ public class MainActivity extends ActionBarActivity {
                 http.logout(ip);
                 break;
         }
+    }
+
+    public void saveForm()
+    {
+        SharedPreferences.Editor editor = preferences.edit();
+        lastLoginTime = Calendar.getInstance().getTimeInMillis();
+        editor.putLong("lastLogin", lastLoginTime);
+        if(mCheckSave.isChecked())
+        {
+            editor.putString("user", mEditAccount.getText().toString());
+            editor.putString("password", mEditPassword.getText().toString());
+        }
+        editor.apply();
+        showLogoutTime(lastLoginTime);
+    }
+
+    public void showAccountInformation(AccountInfo account)
+    {
+        mInfoAccount.setText(account.getUser());
+        mInfoRemained.setText(Double.toString(account.getPublicRemained()) + " MB");
+        mInfoUsed.setText(Double.toString(account.getPublicUsed()) + " MB");
+        mInfoTotal.setText(Double.toString(account.getPublicTotal()) + " MB");
+        mInfoMoney.setText(Double.toString(account.getAccount()));
+        mInfoSchoolUsed.setText(Double.toString(account.getSchoolUsed()) + " MB");
+        mInfoTime.setText(account.getTime());
+    }
+
+    public void showIP(String ip)
+    {
+        mEditIP.setText(ip);
     }
 
     @Override
@@ -113,65 +203,11 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_settings:
                 return true;
             case R.id.action_ip:
-                http.getLastIP("010909122723");
+                http.getLastIP(mEditAccount.getText().toString());
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public EditText getEditIP()
-    {
-        return mEditIP;
-    }
-
-    public EditText getEditAccount()
-    {
-        return mEditAccount;
-    }
-
-    public EditText getEditPassword()
-    {
-        return mEditPassword;
-    }
-
-    public TextView getInfoAccount()
-    {
-        return mInfoAccount;
-    }
-
-    public TextView getInfoTime()
-    {
-        return mInfoTime;
-    }
-
-    public TextView getInfoUsed()
-    {
-        return mInfoUsed;
-    }
-
-    public TextView getInfoTotal()
-    {
-        return mInfoTotal;
-    }
-
-    public TextView getInfoRemained()
-    {
-        return mInfoRemained;
-    }
-
-    public TextView getInfoSchoolUsed()
-    {
-        return mInfoSchoolUsed;
-    }
-
-    public TextView getInfoMoney()
-    {
-        return mInfoMoney;
-    }
-
-    public SharedPreferences getPreferences()
-    {
-        return preferences;
-    }
 }

@@ -23,7 +23,7 @@ public class FluentStringRequest extends StringRequest
 		super(method, url, listener, errorListener);
 		this.ifGetCookie = false;
 	}
-	
+
 	public FluentStringRequest(int method, String url, boolean ifGetCookie,
 			Listener<String> listener, ErrorListener errorListener)
 	{

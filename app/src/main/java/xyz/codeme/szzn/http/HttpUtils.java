@@ -49,7 +49,7 @@ public class HttpUtils
 	private final static String getipUrl = "http://codeme.xyz/api/getip.php";
 	
 	private final MainActivity activity;
-	RequestQueue requestQueue;
+	private RequestQueue requestQueue;
 	
 	private int ipAccessMethod = IP_FROM_SERVER;
 	private String routerURL = "";
@@ -58,24 +58,23 @@ public class HttpUtils
 	private String routerReg = "";
 	private String session = "";
 	private String log = "";
+    private String user;
+    private String password;
+    private String ip;
 	private boolean ifConnected = false;
 
 	public HttpUtils(MainActivity activity)
 	{
 		this.activity = activity;
 		this.requestQueue = Volley.newRequestQueue(activity);
-		this.RefreshSession();
+		this.refreshSession(false);
 	}
 	/**
 	 * 路由器配置
-	 * @param routerURL
-	 * 		路由管理页
-	 * @param routerReferer
-	 * 		路由管理头部Referrer
-	 * @param routerCookie
-	 * 		路由登陆Cookie
-	 * @param routerReg
-	 * 		匹配IP地址正则表达式
+	 * @param routerURL     路由管理页
+	 * @param routerReferer 路由管理头部Referrer
+	 * @param routerCookie  路由登陆Cookie
+	 * @param routerReg     匹配IP地址正则表达式
 	 */
 	public void routerConfigure(String routerURL, String routerReferer,
 			String routerCookie, String routerReg)
@@ -88,11 +87,8 @@ public class HttpUtils
 	}
 	/**
 	 * 登陆
-	 * @param user
-	 * @param password
-	 * @param IP
 	 */
-	public void login(String user, String password, String IP)
+	public void login(final String user, final String password, final String IP)
 	{
 		KeyValuePairs form = KeyValuePairs.create()
 				.add("accountID", user + "@zndx.inter")
@@ -119,13 +115,16 @@ public class HttpUtils
                 				log = parseCode(resultCode);
                 				ifConnected = true;
                 				showToast(R.string.success_login);
+                                Log.i(MainActivity.TAG, "login:success");
                 				if(session.length() > 0)
                 					getInformation();
+                                saveIP(user, IP);
+                                activity.saveForm();
                 				return;
                 			}
                 			log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
                 			showMessage(R.string.error_login, log);
-                			Log.e(MainActivity.TAG, "Login:" + log);
+                			Log.e(MainActivity.TAG, "login:" + log);
 						}
                         catch (JSONException e)
 						{
@@ -134,7 +133,7 @@ public class HttpUtils
 						}
                         finally
                         {
-                        	if (progressDialog.isShowing() && progressDialog != null)
+                        	if (progressDialog.isShowing())
                             	progressDialog.dismiss();
                         }
                     }
@@ -143,7 +142,7 @@ public class HttpUtils
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
-                    	if (progressDialog.isShowing() && progressDialog != null)
+                    	if (progressDialog.isShowing())
                         	progressDialog.dismiss();
 						showToast(R.string.error_login);
 						Log.e(MainActivity.TAG, "login:connect error");
@@ -156,9 +155,9 @@ public class HttpUtils
 	
 	/**
 	 * 下线
-	 * @param IP
+	 * @param IP 需下线IP，任何IP均可
 	 */
-	public void logout(String IP)
+	public void logout(final String IP)
 	{
 		KeyValuePairs form = KeyValuePairs.create()
 				.add("brasAddress", "59df7586")
@@ -182,6 +181,7 @@ public class HttpUtils
                 				log = parseCode(resultCode);
                 				ifConnected = false;
                 				showToast(R.string.success_logout);
+                                Log.i(MainActivity.TAG, "logout:success");
                 				return;
                 			}
                 			log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
@@ -195,7 +195,7 @@ public class HttpUtils
 						}
                         finally
                         {
-                        	if (progressDialog.isShowing() && progressDialog != null)
+                        	if (progressDialog.isShowing())
                             	progressDialog.dismiss();
                         }
                     }
@@ -204,7 +204,7 @@ public class HttpUtils
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
-                    	if (progressDialog.isShowing() && progressDialog != null)
+                    	if (progressDialog.isShowing())
                         	progressDialog.dismiss();
 						showToast(R.string.error_logout);
 						Log.e(MainActivity.TAG, "logout:connect error");
@@ -216,15 +216,13 @@ public class HttpUtils
 	}
 	/**
 	 * 重新登陆
-	 * @param user
-	 * @param password
-	 * @param IP
 	 */
-	public void relogin(String user, String password, String IP)
+	public void relogin(String user, String password, String ip)
 	{
-		this.RefreshSession();
-		logout(IP);
-		login(user, password, IP);
+		refreshSession(true);
+        this.user = user;
+        this.password = password;
+        this.ip = ip;
 	}
 	
 	/**
@@ -235,7 +233,7 @@ public class HttpUtils
 		String ip = getIPFromLocal();
 		if(ip != null)
 		{
-			activity.getEditIP().setText(ip);
+			activity.showIP(ip);
 			return;
 		}
 		switch(this.ipAccessMethod)
@@ -250,8 +248,8 @@ public class HttpUtils
 	}
 	/**
 	 * 上传保存IP
-	 * @param user
-	 * @param IP
+	 * @param user  用户名
+	 * @param IP    要保存的IP
 	 */
 	public void saveIP(String user, String IP)
 	{
@@ -293,16 +291,17 @@ public class HttpUtils
 
 	/**
 	 * 获取上次登录IP
-	 * @param user
+	 * @param user  要获取IP的用户
 	 */
 	public void getLastIP(String user)
 	{
 		KeyValuePairs form = KeyValuePairs.create()
 				.add("user", user);
 		
-		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在获取"); 
-		
-		FluentJsonRequest jsonRequest = new FluentJsonRequest(
+		final ProgressDialog progressDialog;
+        progressDialog = ProgressDialog.show(activity, "Loading...", "正在获取");
+
+        FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.getipUrl,
                 form.build(),
                 new Response.Listener<JSONObject>() {
@@ -315,7 +314,7 @@ public class HttpUtils
                 			{
                 				String ip = jsonObj.getString("ip");
 //                				String time = jsonObj.getString("time");
-                				activity.getEditIP().setText(ip);
+                                activity.showIP(ip);
                 			}
                 			else
                 			{
@@ -331,7 +330,7 @@ public class HttpUtils
 						}
                         finally
                         {
-                        	if (progressDialog.isShowing() && progressDialog != null)
+                        	if (progressDialog.isShowing())
                             	progressDialog.dismiss();
                         }
                     }
@@ -340,7 +339,7 @@ public class HttpUtils
                     @Override
                     public void onErrorResponse(VolleyError arg0)
                     {
-                    	if (progressDialog.isShowing() && progressDialog != null)
+                    	if (progressDialog.isShowing())
                         	progressDialog.dismiss();
         				Log.e(MainActivity.TAG, "getlastip:connect error");
 						showToast(R.string.error_ip);
@@ -365,7 +364,7 @@ public class HttpUtils
                     @Override
                     public void onResponse(String content) {
                     	AccountInfo account = new AccountInfo(content);
-                    	showAccountInformation(account);
+                    	activity.showAccountInformation(account);
                     }
                 },
                 new Response.ErrorListener() {
@@ -378,20 +377,7 @@ public class HttpUtils
 		request.setHeaders(headers.build());
         requestQueue.add(request);
 	}
-	/**
-	 * 展示账户信息
-	 * @param account
-	 */
-	private void showAccountInformation(AccountInfo account)
-	{
-		activity.getInfoAccount().setText(account.getUser());
-		activity.getInfoRemained().setText(Double.toString(account.getPublicRemained()) + " MB");
-		activity.getInfoUsed().setText(Double.toString(account.getPublicUsed()) + " MB");
-		activity.getInfoTotal().setText(Double.toString(account.getPublicTotal()) + " MB");
-		activity.getInfoMoney().setText(Double.toString(account.getAccount()));
-		activity.getInfoSchoolUsed().setText(Double.toString(account.getSchoolUsed()) + " MB");
-		activity.getInfoTime().setText(account.getTime());
-	}
+
 	/**
 	 * 获取设备当前IP
 	 */
@@ -434,7 +420,7 @@ public class HttpUtils
                 		Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
-                			activity.getEditIP().setText(match.group(0));
+                            activity.showIP(match.group(0));
                 		else
                 		{
                 			Log.w(MainActivity.TAG, "server端获取IP失败");
@@ -470,7 +456,7 @@ public class HttpUtils
                     	Pattern pattern = Pattern.compile(routerReg);
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
-                			activity.getEditIP().setText(match.group(0));
+                            activity.showIP(match.group(0));
                 		else
                 		{
                 			Log.w(MainActivity.TAG, "router端获取IP失败");
@@ -492,7 +478,7 @@ public class HttpUtils
 	/**
 	 * 获取整个过程session
 	 */
-	private void RefreshSession()
+	private void refreshSession(final boolean ifAnnounce)
 	{
 		FluentStringRequest request = new FluentStringRequest(
 				Request.Method.GET,
@@ -504,7 +490,12 @@ public class HttpUtils
         				Pattern pattern = Pattern.compile("JSESSIONID=([^;]+);");
         				Matcher match = pattern.matcher(headers);
         				if(match.find())
-        					session = match.group(1);
+                        {
+                            session = match.group(1);
+                            Log.i(MainActivity.TAG, "session refresh success");
+                            if(ifAnnounce)
+                                refreshSuccess();
+                        }
         				else
         					Log.w(MainActivity.TAG, "获取session失败");
                     }
@@ -518,10 +509,16 @@ public class HttpUtils
                 });
         requestQueue.add(request);
 	}
-	
+
+    private void refreshSuccess()
+    {
+        logout(ip);
+        login(user, password, ip);
+    }
+
 	/**
 	 * 显示Toast
-	 * @param resourceId
+	 * @param resourceId 资源id
 	 */
 	private void showToast(int resourceId)
 	{
@@ -529,8 +526,8 @@ public class HttpUtils
 	}
 	/**
 	 * 显示消息提示
-	 * @param resourceId
-	 * @param log
+	 * @param resourceId    资源id
+	 * @param log           日志内容
 	 */
 	private void showMessage(int resourceId, String log)
 	{
@@ -544,8 +541,8 @@ public class HttpUtils
 	
 	/**
 	 * 解析json中code含义
-	 * @param code
-	 * @return
+	 * @param code  返回结果码
+	 * @return  含义
 	 */
 	private String parseCode(int code)
 	{
