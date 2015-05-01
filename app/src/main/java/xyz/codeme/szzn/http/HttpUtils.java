@@ -468,7 +468,8 @@ public class HttpUtils
                 		else
                 		{
                 			Log.w(MainActivity.TAG, "router端获取IP失败");
-                			showToast(R.string.error_ip);
+                			showToast(R.string.error_router);
+							getIPFromServer();
                 		}
                     }
                 },

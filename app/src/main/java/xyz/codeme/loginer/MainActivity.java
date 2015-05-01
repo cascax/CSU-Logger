@@ -1,5 +1,6 @@
 package xyz.codeme.loginer;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -77,8 +78,7 @@ public class MainActivity extends ActionBarActivity {
         intiRestOfTime();
     }
 
-    private void initRouter()
-    {
+    private void initRouter() {
         String routerURL = preferences.getString("routerURL", "http://192.168.5.1/userRpm/StatusRpm.htm");
         if(routerURL.length() == 0) return;
         String routerReferer = preferences.getString("routerReferer", "http://192.168.5.1/");
@@ -101,17 +101,14 @@ public class MainActivity extends ActionBarActivity {
         http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
     }
 
-    private void intiRestOfTime()
-    {
+    private void intiRestOfTime() {
         lastLoginTime = preferences.getLong("lastLogin", 0);
-        if(lastLoginTime != 0)
-        {
+        if(lastLoginTime != 0) {
             showLogoutTime(lastLoginTime);
         }
     }
 
-    private void showLogoutTime(long lastLogin)
-    {
+    private void showLogoutTime(long lastLogin) {
         lastLogin += 43200000;
         Calendar time = Calendar.getInstance();
         time.setTimeInMillis(lastLogin);
@@ -123,16 +120,14 @@ public class MainActivity extends ActionBarActivity {
     /**
      * 刷新重新获取IP
      */
-    public void refreshIP(View view)
-    {
+    public void refreshIP(View view) {
         http.getIP();
     }
 
     /**
      * 提交
      */
-    public void submit(View view)
-    {
+    public void submit(View view) {
         int selected = (int) mSpinnerMethod.getSelectedItemId();
         String account, password, ip;
         account = mEditAccount.getText().toString();
@@ -140,8 +135,7 @@ public class MainActivity extends ActionBarActivity {
         password = RSAEncrypt.newInstance().encryptedString(password);
         ip = mEditIP.getText().toString();
 
-        switch(selected)
-        {
+        switch(selected) {
             case 0:
                 http.relogin(account, password, ip);
                 break;
@@ -154,13 +148,11 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void saveForm()
-    {
+    public void saveForm() {
         SharedPreferences.Editor editor = preferences.edit();
         lastLoginTime = Calendar.getInstance().getTimeInMillis();
         editor.putLong("lastLogin", lastLoginTime);
-        if(mCheckSave.isChecked())
-        {
+        if(mCheckSave.isChecked()) {
             editor.putString("user", mEditAccount.getText().toString());
             editor.putString("password", mEditPassword.getText().toString());
         }
@@ -168,8 +160,7 @@ public class MainActivity extends ActionBarActivity {
         showLogoutTime(lastLoginTime);
     }
 
-    public void showAccountInformation(AccountInfo account)
-    {
+    public void showAccountInformation(AccountInfo account) {
         mInfoAccount.setText(account.getUser());
         mInfoRemained.setText(Double.toString(account.getPublicRemained()) + " MB");
         mInfoUsed.setText(Double.toString(account.getPublicUsed()) + " MB");
@@ -198,8 +189,7 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch (id)
-        {
+        switch (id) {
             case R.id.action_settings:
                 return true;
             case R.id.action_ip:
