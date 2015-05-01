@@ -131,7 +131,7 @@ public class BasicNetwork implements Network {
                 long requestLifetime = SystemClock.elapsedRealtime() - requestStart;
                 logSlowRequests(requestLifetime, request, responseContents, statusLine);
 
-                // 处理临时和永久重定向
+                // 澶勭悊涓存椂鍜屾案涔呴噸瀹氬悜
                 if(statusCode == HttpStatus.SC_MOVED_TEMPORARILY
                         || statusCode == HttpStatus.SC_MOVED_PERMANENTLY) {
                     return new NetworkResponse(statusCode, responseContents, responseHeaders,
