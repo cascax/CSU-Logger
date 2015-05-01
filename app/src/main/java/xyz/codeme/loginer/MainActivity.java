@@ -86,7 +86,7 @@ public class MainActivity extends ActionBarActivity {
         String routerCookie;
         routerCookie= preferences.getString("routerAdmin", "admin")
                 + ":"
-                + preferences.getString("routerPassword", "123456");
+                + preferences.getString("routerPassword", "admin");
         routerCookie = Base64.encodeToString(routerCookie.getBytes(), Base64.DEFAULT);
         try {
             routerCookie = "Authorization=Basic%20"

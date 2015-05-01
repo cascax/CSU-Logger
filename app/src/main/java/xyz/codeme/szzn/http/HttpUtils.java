@@ -1,8 +1,10 @@
 package xyz.codeme.szzn.http;
 
+import java.net.HttpURLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -67,6 +69,7 @@ public class HttpUtils
 	{
 		this.activity = activity;
 		this.requestQueue = Volley.newRequestQueue(activity);
+		HttpURLConnection.setFollowRedirects(false);
 		this.refreshSession(false);
 	}
 	/**
@@ -412,15 +415,17 @@ public class HttpUtils
                 		{
                 			ifConnected = true;
                 			showToast(R.string.msg_online);
-                			if(routerURL.length() > 0)
-                				getIPFromRouter();
+							Log.w(MainActivity.TAG, "server端获取IP失败，在线");
                 			return;
                 		}
                 		
                 		Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
+						{
                             activity.showIP(match.group(0));
+							Log.i(MainActivity.TAG, "getIPFromServer:success");
+						}
                 		else
                 		{
                 			Log.w(MainActivity.TAG, "server端获取IP失败");
@@ -456,7 +461,10 @@ public class HttpUtils
                     	Pattern pattern = Pattern.compile(routerReg);
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
-                            activity.showIP(match.group(0));
+						{
+							activity.showIP(match.group(0));
+							Log.i(MainActivity.TAG, "getIPFromRouter:success");
+						}
                 		else
                 		{
                 			Log.w(MainActivity.TAG, "router端获取IP失败");
@@ -526,8 +534,8 @@ public class HttpUtils
 	}
 	/**
 	 * 显示消息提示
-	 * @param resourceId    资源id
-	 * @param log           日志内容
+	 * @param resourceId    资源id，标题
+	 * @param log           内容
 	 */
 	private void showMessage(int resourceId, String log)
 	{
