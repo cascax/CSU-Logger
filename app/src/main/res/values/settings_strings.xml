@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setting_title">设置</string>
+
+    <string name="general_title">通用</string>
+    <string name="general_saveip">是否保存IP</string>
+    <string name="general_summary_saveip">将IP保存在远端服务器便于异地下线</string>
+
+    <string name="router_title">路由器配置</string>
+    <string name="router_ifuse">是否使用路由器</string>
+    <string name="router_url">获取IP页</string>
+    <string name="router_default_url">http://192.168.5.1/userRpm/StatusRpm.htm</string>
+    <string name="router_referer">管理主页</string>
+    <string name="router_default_referer">http://192.168.5.1</string>
+    <string name="router_admin">账户</string>
+    <string name="router_default_admin">admin</string>
+    <string name="router_password">密码</string>
+    <string name="router_default_password">admin</string>
+    <string name="router_reg">IP正则</string>
+    <string name="router_summary_reg">用于匹配IP，非专业用户请不要修改</string>
+    <string name="router_default_reg">10\\.96\\.[1\-9]\\d{0,2}\\.\\d{1,3}</string>
+</resources>

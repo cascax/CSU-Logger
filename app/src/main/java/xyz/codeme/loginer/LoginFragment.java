@@ -2,8 +2,10 @@ package xyz.codeme.loginer;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -57,7 +59,7 @@ public class LoginFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        preferences = getActivity().getSharedPreferences("setting", Activity.MODE_PRIVATE);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         http = new HttpUtils(this);
     }
 
@@ -112,15 +114,22 @@ public class LoginFragment extends Fragment {
         mEditPassword.setText(preferences.getString("password", ""));
     }
 
+    /**
+     * 获取路由器ip页,referer,cookie,ip匹配正则参数，并配置
+     */
     private void initRouter() {
-        String routerURL = preferences.getString("routerURL", "http://192.168.5.1/userRpm/StatusRpm.htm");
-        if(routerURL != null && routerURL.length() == 0) return;
-        String routerReferer = preferences.getString("routerReferer", "http://192.168.5.1/");
+        if(! preferences.getBoolean("use_router", false))
+            return;
+        String routerURL, routerReferer, routerCookie, routerReg;
+        routerURL = preferences.getString("router_url", getString(R.string.router_default_url));
+        routerReferer = preferences.getString("router_referer",
+                getString(R.string.router_default_referer));
+        routerReg = preferences.getString("router_reg", getString(R.string.router_default_reg));
 
-        String routerCookie;
-        routerCookie= preferences.getString("routerAdmin", "admin")
+        // 装载cookie
+        routerCookie = preferences.getString("router_admin", getString(R.string.router_default_admin))
                 + ":"
-                + preferences.getString("routerPassword", "admin");
+                + preferences.getString("router_password", getString(R.string.router_default_password));
         routerCookie = Base64.encodeToString(routerCookie.getBytes(), Base64.DEFAULT);
         try {
             routerCookie = "Authorization=Basic%20"
@@ -130,7 +139,6 @@ public class LoginFragment extends Fragment {
             Toast.makeText(getActivity(), R.string.error_router, Toast.LENGTH_SHORT).show();
             return;
         }
-        String routerReg = preferences.getString("routerReg", "10\\.96\\.[1-9]\\d{0,2}\\.\\d{1,3}");
 
         http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
     }
@@ -221,6 +229,8 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
+                Intent i = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(i);
                 return true;
             case R.id.action_ip:
                 http.getLastIP(mEditAccount.getText().toString());

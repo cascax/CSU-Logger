@@ -1,0 +1,65 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/general_title">
+        <CheckBoxPreference
+            android:key="if_save_ip"
+            android:title="@string/general_saveip" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/router_title">
+
+        <CheckBoxPreference
+            android:key="use_router"
+            android:title="@string/router_ifuse"
+            android:summary="@string/general_summary_saveip" />
+
+        <EditTextPreference
+            android:key="router_url"
+            android:dependency="use_router"
+            android:title="@string/router_url"
+            android:defaultValue="@string/router_default_url"
+            android:summary="@string/router_default_url"
+            android:selectAllOnFocus="true" />
+
+        <EditTextPreference
+            android:key="router_referer"
+            android:dependency="use_router"
+            android:title="@string/router_referer"
+            android:defaultValue="@string/router_default_referer"
+            android:summary="@string/router_default_referer"
+            android:selectAllOnFocus="true" />
+
+        <EditTextPreference
+            android:key="router_admin"
+            android:dependency="use_router"
+            android:title="@string/router_admin"
+            android:defaultValue="@string/router_default_admin"
+            android:summary="@string/router_default_admin"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+        <EditTextPreference
+            android:key="router_password"
+            android:dependency="use_router"
+            android:title="@string/router_password"
+            android:defaultValue="@string/router_default_password"
+            android:inputType="textPassword"
+            android:summary="@string/router_default_password"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+        <EditTextPreference
+            android:key="router_reg"
+            android:dependency="use_router"
+            android:title="@string/router_reg"
+            android:defaultValue="@string/router_default_reg"
+            android:summary="@string/router_summary_reg"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+    </PreferenceCategory>
+</PreferenceScreen>
