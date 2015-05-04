@@ -8,10 +8,12 @@ import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import xyz.codeme.loginer.LoginFragment;
 import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -50,7 +52,7 @@ public class HttpUtils
 	private final static String saveUrl = "http://codeme.xyz/api/saveip.php";
 	private final static String getipUrl = "http://codeme.xyz/api/getip.php";
 	
-	private final MainActivity activity;
+	private final LoginFragment fragment;
 	private RequestQueue requestQueue;
 	
 	private int ipAccessMethod = IP_FROM_SERVER;
@@ -65,10 +67,10 @@ public class HttpUtils
     private String ip;
 	private boolean ifConnected = false;
 
-	public HttpUtils(MainActivity activity)
+	public HttpUtils(LoginFragment fragment)
 	{
-		this.activity = activity;
-		this.requestQueue = Volley.newRequestQueue(activity);
+		this.fragment = fragment;
+		this.requestQueue = Volley.newRequestQueue(fragment.getActivity());
 		HttpURLConnection.setFollowRedirects(false);
 		this.refreshSession(false);
 	}
@@ -102,8 +104,9 @@ public class HttpUtils
 				.add("Referer", HttpUtils.mainUrl)
 				.add("Cookie", "JSESSIONID=" + this.session);
 		
-		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在登陆"); 
-		
+		final ProgressDialog progressDialog;
+		progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在登陆");
+
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.loginUrl,
                 form.build(),
@@ -122,7 +125,7 @@ public class HttpUtils
                 				if(session.length() > 0)
                 					getInformation();
                                 saveIP(user, IP);
-                                activity.saveForm();
+								fragment.saveForm();
                 				return;
                 			}
                 			log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
@@ -168,8 +171,9 @@ public class HttpUtils
 		KeyValuePairs headers = KeyValuePairs.create()
 				.add("Referer", HttpUtils.showUrl);
 		
-		final ProgressDialog progressDialog = ProgressDialog.show(activity, "Loading...", "正在下线"); 
-		
+		final ProgressDialog progressDialog;
+		progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在下线");
+
 		FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.logoutUrl,
                 form.build(),
@@ -236,7 +240,7 @@ public class HttpUtils
 		String ip = getIPFromLocal();
 		if(ip != null)
 		{
-			activity.showIP(ip);
+			fragment.showIP(ip);
 			return;
 		}
 		switch(this.ipAccessMethod)
@@ -302,7 +306,7 @@ public class HttpUtils
 				.add("user", user);
 		
 		final ProgressDialog progressDialog;
-        progressDialog = ProgressDialog.show(activity, "Loading...", "正在获取");
+        progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在获取");
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.getipUrl,
@@ -317,7 +321,7 @@ public class HttpUtils
                 			{
                 				String ip = jsonObj.getString("ip");
 //                				String time = jsonObj.getString("time");
-                                activity.showIP(ip);
+								fragment.showIP(ip);
                 			}
                 			else
                 			{
@@ -367,7 +371,7 @@ public class HttpUtils
                     @Override
                     public void onResponse(String content) {
                     	AccountInfo account = new AccountInfo(content);
-                    	activity.showAccountInformation(account);
+						fragment.showAccountInformation(account);
                     }
                 },
                 new Response.ErrorListener() {
@@ -386,7 +390,9 @@ public class HttpUtils
 	 */
 	private String getIPFromLocal()
 	{
-		WifiManager wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+		WifiManager wifiManager;
+		wifiManager = (WifiManager) fragment.getActivity().getSystemService(Context.WIFI_SERVICE);
+
 		if(wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED)
 		{
 			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -423,7 +429,7 @@ public class HttpUtils
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
 						{
-                            activity.showIP(match.group(0));
+							fragment.showIP(match.group(0));
 							Log.i(MainActivity.TAG, "getIPFromServer:success");
 						}
                 		else
@@ -462,7 +468,7 @@ public class HttpUtils
                 		Matcher match = pattern.matcher(content);
                 		if(match.find())
 						{
-							activity.showIP(match.group(0));
+							fragment.showIP(match.group(0));
 							Log.i(MainActivity.TAG, "getIPFromRouter:success");
 						}
                 		else
@@ -531,7 +537,7 @@ public class HttpUtils
 	 */
 	private void showToast(int resourceId)
 	{
-		Toast.makeText(activity, resourceId, Toast.LENGTH_SHORT).show();
+		Toast.makeText(fragment.getActivity(), resourceId, Toast.LENGTH_SHORT).show();
 	}
 	/**
 	 * 显示消息提示
@@ -540,8 +546,8 @@ public class HttpUtils
 	 */
 	private void showMessage(int resourceId, String log)
 	{
-		Resources res = activity.getResources();
-		new AlertDialog.Builder(activity)
+		Resources res = fragment.getResources();
+		new AlertDialog.Builder(fragment.getActivity())
 			.setTitle(res.getString(resourceId))
 			.setMessage(log)
 			.setPositiveButton(R.string.btn_ok, null)
