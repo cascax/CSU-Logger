@@ -1,7 +1,8 @@
 package xyz.codeme.loginer;
 
-import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -33,7 +34,7 @@ import xyz.codeme.szzn.http.HttpUtils;
 import xyz.codeme.szzn.rsa.RSAEncrypt;
 
 public class LoginFragment extends Fragment {
-    public static String TAG = "LoginerLogin";
+    private static final String TAG = "LoginerLogin";
 
     private Spinner mSpinnerMethod;
     private EditText mEditIP;
@@ -54,6 +55,7 @@ public class LoginFragment extends Fragment {
     private HttpUtils http;
     private SharedPreferences preferences;
     private long lastLoginTime;
+    private AccountInfo account;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,10 +90,59 @@ public class LoginFragment extends Fragment {
         initOnClickListener();
         initFormPref();
         initRouter();
+        if (!preferences.getBoolean("if_save_ip", true))
+            http.setIfSaveIP(false);
         http.getIP();
-        intiRestOfTime();
+        initRestOfTime();
 
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        restoreStateFromArguments();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        saveStateToArguments();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        saveStateToArguments();
+    }
+
+    private void saveStateToArguments() {
+        Bundle s = getArguments();
+        Bundle state = new Bundle();
+        if (account != null) {
+            state.putString("User", account.getUser());
+            state.putString("Time", account.getTime());
+            state.putDoubleArray("Rate", new double[]{
+                    account.getPublicTotal(),
+                    account.getPublicUsed(),
+                    account.getPublicRemained(),
+                    account.getSchoolUsed(),
+                    account.getAccount()
+            });
+            s.putBundle("accountState", state);
+        }
+    }
+
+    private void restoreStateFromArguments() {
+        Bundle s = getArguments();
+        Bundle state = s.getBundle("accountState");
+        if(state != null) {
+            showAccountInformation(new AccountInfo(
+                    state.getString("User"),
+                    state.getString("Time"),
+                    state.getDoubleArray("Rate")
+            ));
+        }
     }
 
     public void initOnClickListener() {
@@ -118,7 +169,7 @@ public class LoginFragment extends Fragment {
      * 获取路由器ip页,referer,cookie,ip匹配正则参数，并配置
      */
     private void initRouter() {
-        if(! preferences.getBoolean("use_router", false))
+        if (!preferences.getBoolean("use_router", false))
             return;
         String routerURL, routerReferer, routerCookie, routerReg;
         routerURL = preferences.getString("router_url", getString(R.string.router_default_url));
@@ -143,15 +194,17 @@ public class LoginFragment extends Fragment {
         http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
     }
 
-    private void intiRestOfTime() {
+    private void initRestOfTime() {
         lastLoginTime = preferences.getLong("lastLogin", 0);
-        if(lastLoginTime != 0) {
+        if (lastLoginTime != 0) {
             showLogoutTime(lastLoginTime);
         }
     }
 
     private void showLogoutTime(long lastLogin) {
         lastLogin += 43200000;
+        if (Calendar.getInstance().getTimeInMillis() > lastLogin)
+            return;
         Calendar time = Calendar.getInstance();
         time.setTimeInMillis(lastLogin);
         SimpleDateFormat dateFormat;
@@ -177,7 +230,7 @@ public class LoginFragment extends Fragment {
         password = RSAEncrypt.newInstance().encryptedString(password);
         ip = mEditIP.getText().toString();
 
-        switch(selected) {
+        switch (selected) {
             case 0:
                 http.relogin(account, password, ip);
                 break;
@@ -194,7 +247,7 @@ public class LoginFragment extends Fragment {
         SharedPreferences.Editor editor = preferences.edit();
         lastLoginTime = Calendar.getInstance().getTimeInMillis();
         editor.putLong("lastLogin", lastLoginTime);
-        if(mCheckSave.isChecked()) {
+        if (mCheckSave.isChecked()) {
             editor.putString("user", mEditAccount.getText().toString());
             editor.putString("password", mEditPassword.getText().toString());
         }
@@ -203,6 +256,7 @@ public class LoginFragment extends Fragment {
     }
 
     public void showAccountInformation(AccountInfo account) {
+        this.account = account;
         mInfoAccount.setText(account.getUser());
         mInfoRemained.setText(Double.toString(account.getPublicRemained()) + " MB");
         mInfoUsed.setText(Double.toString(account.getPublicUsed()) + " MB");
@@ -212,8 +266,7 @@ public class LoginFragment extends Fragment {
         mInfoTime.setText(account.getTime());
     }
 
-    public void showIP(String ip)
-    {
+    public void showIP(String ip) {
         mEditIP.setText(ip);
     }
 
@@ -229,8 +282,15 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
-                Intent i = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(i);
+//                Intent i = new Intent(getActivity(), SettingsActivity.class);
+//                startActivity(i);
+                FragmentManager fragmentManager = getFragmentManager();
+                Fragment settingsFragment = new SettingsFragment();
+                fragmentManager.beginTransaction()
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .replace(R.id.fragmentContainer, settingsFragment)
+                        .addToBackStack(null)
+                        .commit();
                 return true;
             case R.id.action_ip:
                 http.getLastIP(mEditAccount.getText().toString());

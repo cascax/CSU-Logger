@@ -3,7 +3,9 @@
         android:title="@string/general_title">
         <CheckBoxPreference
             android:key="if_save_ip"
-            android:title="@string/general_saveip" />
+            android:title="@string/general_saveip"
+            android:summary="@string/general_summary_saveip"
+            android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -11,8 +13,7 @@
 
         <CheckBoxPreference
             android:key="use_router"
-            android:title="@string/router_ifuse"
-            android:summary="@string/general_summary_saveip" />
+            android:title="@string/router_ifuse" />
 
         <EditTextPreference
             android:key="router_url"

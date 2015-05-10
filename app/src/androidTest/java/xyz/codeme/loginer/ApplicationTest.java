@@ -1,4 +1,4 @@
-package loginer.codeme.xyz.loginer;
+package xyz.codeme.loginer;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

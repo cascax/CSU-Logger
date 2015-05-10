@@ -9,9 +9,9 @@
     <string name="router_title">路由器配置</string>
     <string name="router_ifuse">是否使用路由器</string>
     <string name="router_url">获取IP页</string>
-    <string name="router_default_url">http://192.168.5.1/userRpm/StatusRpm.htm</string>
+    <string name="router_default_url">http://192.168.1.1/userRpm/StatusRpm.htm</string>
     <string name="router_referer">管理主页</string>
-    <string name="router_default_referer">http://192.168.5.1</string>
+    <string name="router_default_referer">http://192.168.1.1</string>
     <string name="router_admin">账户</string>
     <string name="router_default_admin">admin</string>
     <string name="router_password">密码</string>
