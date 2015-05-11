@@ -3,10 +3,11 @@ package xyz.codeme.loginer;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -102,6 +103,11 @@ public class LoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         restoreStateFromArguments();
+        ActionBar bar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        if(bar != null) {
+            bar.setTitle(R.string.app_name);
+            bar.setDisplayHomeAsUpEnabled(false);
+        }
     }
 
     @Override
@@ -282,8 +288,6 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
-//                Intent i = new Intent(getActivity(), SettingsActivity.class);
-//                startActivity(i);
                 FragmentManager fragmentManager = getFragmentManager();
                 Fragment settingsFragment = new SettingsFragment();
                 fragmentManager.beginTransaction()

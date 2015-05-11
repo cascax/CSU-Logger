@@ -1,14 +1,11 @@
 package xyz.codeme.loginer;
 
-import android.app.ActionBar;
+import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
 public class SettingsFragment extends PreferenceFragment {
     @Override
@@ -16,27 +13,18 @@ public class SettingsFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preference);
         setHasOptionsMenu(true);
-        Log.d(MainActivity.TAG, "onCreate!");
+        ActionBar bar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        if(bar != null) {
+            bar.setTitle(R.string.setting_title);
+            bar.setDisplayHomeAsUpEnabled(true);
+        }
     }
-
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        ActionBar bar = getActivity().getActionBar();
-//        if(bar != null) {
-//            bar.setTitle(R.string.setting_title);
-//            bar.setDisplayHomeAsUpEnabled(true);
-//            Log.d(MainActivity.TAG, "bar!");
-//        }
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
-                if(NavUtils.getParentActivityName(getActivity()) != null) {
-                    NavUtils.navigateUpFromSameTask(getActivity());
-                }
+                getFragmentManager().popBackStack();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
