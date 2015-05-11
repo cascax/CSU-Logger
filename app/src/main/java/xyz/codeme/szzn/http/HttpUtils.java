@@ -4,7 +4,6 @@ import java.net.HttpURLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +12,6 @@ import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -52,6 +50,7 @@ public class HttpUtils {
 
     private final LoginFragment fragment;
     private RequestQueue requestQueue;
+    private ProgressDialog progressDialog;
 
     private int ipAccessMethod = IP_FROM_SERVER;
     private String routerURL = "";
@@ -103,8 +102,7 @@ public class HttpUtils {
                 .add("Referer", HttpUtils.mainUrl)
                 .add("Cookie", "JSESSIONID=" + this.session);
 
-        final ProgressDialog progressDialog;
-        progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在登陆");
+        showProgress(R.string.text_loading_login);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.loginUrl,
@@ -133,16 +131,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "login:json error");
                             showToast(R.string.error_login);
                         } finally {
-                            if (progressDialog.isShowing())
-                                progressDialog.dismiss();
+                            dismissProgress();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        if (progressDialog.isShowing())
-                            progressDialog.dismiss();
+                        dismissProgress();
                         showToast(R.string.error_login);
                         Log.e(MainActivity.TAG, "login:connect error");
                     }
@@ -164,8 +160,7 @@ public class HttpUtils {
         KeyValuePairs headers = KeyValuePairs.create()
                 .add("Referer", HttpUtils.showUrl);
 
-        final ProgressDialog progressDialog;
-        progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在下线");
+        showProgress(R.string.text_loading_logout);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.logoutUrl,
@@ -189,16 +184,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "logout:json error");
                             showToast(R.string.error_logout);
                         } finally {
-                            if (progressDialog.isShowing())
-                                progressDialog.dismiss();
+                            dismissProgress();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        if (progressDialog.isShowing())
-                            progressDialog.dismiss();
+                        dismissProgress();
                         showToast(R.string.error_logout);
                         Log.e(MainActivity.TAG, "logout:connect error");
                     }
@@ -297,8 +290,7 @@ public class HttpUtils {
         KeyValuePairs form = KeyValuePairs.create()
                 .add("user", user);
 
-        final ProgressDialog progressDialog;
-        progressDialog = ProgressDialog.show(fragment.getActivity(), "Loading...", "正在获取");
+        showProgress(R.string.text_loading_get);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.getipUrl,
@@ -321,16 +313,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "getlastip:json error");
                             showToast(R.string.error_ip);
                         } finally {
-                            if (progressDialog.isShowing())
-                                progressDialog.dismiss();
+                            dismissProgress();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        if (progressDialog.isShowing())
-                            progressDialog.dismiss();
+                        dismissProgress();
                         Log.e(MainActivity.TAG, "getlastip:connect error");
                         showToast(R.string.error_ip);
                     }
@@ -436,7 +426,8 @@ public class HttpUtils {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
                         Log.w(MainActivity.TAG, "router端获取IP失败");
-                        showToast(R.string.error_ip);
+                        showToast(R.string.error_router);
+                        getIPFromServer();
                     }
                 });
         request.setHeaders(headers.build());
@@ -501,6 +492,17 @@ public class HttpUtils {
                 .setMessage(log)
                 .setPositiveButton(R.string.btn_ok, null)
                 .show();
+    }
+
+    private void showProgress(int resourceId) {
+        String content = fragment.getResources().getString(resourceId);
+        progressDialog = ProgressDialog.show(fragment.getActivity(),
+                "", content, true, true);
+    }
+
+    private void dismissProgress() {
+        if(progressDialog != null && progressDialog.isShowing())
+            progressDialog.dismiss();
     }
 
     /**
