@@ -241,7 +241,11 @@
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:contentDescription="@string/btn_ip"
-                    android:src="@android:drawable/stat_notify_sync" />
+                    android:src="@android:drawable/stat_notify_sync"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp" />
 
             </LinearLayout>
 
@@ -260,6 +264,7 @@
                 android:padding="10dp"
                 android:text="@string/btn_text_submit"
                 android:textSize="20sp"
+                android:textColor="@color/title_primary"
                 android:layout_marginTop="15dp" />
 
         </LinearLayout>

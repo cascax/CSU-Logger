@@ -4,6 +4,7 @@ import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -18,11 +19,9 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-        ActionBar bar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        if(bar != null) {
-            bar.setTitle(R.string.setting_title);
-            bar.setDisplayHomeAsUpEnabled(true);
-        }
+        Toolbar toolbar = ((MainActivity)getActivity()).getToolbar();
+        toolbar.setTitle(R.string.setting_title);
+        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
     }
 
     @Override

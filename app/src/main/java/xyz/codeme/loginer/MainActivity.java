@@ -17,10 +17,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        if(toolbar != null) {
-            toolbar.setTitleTextColor(getResources().getColor(R.color.title_primary));
-            setSupportActionBar(toolbar);
-        }
+        setSupportActionBar(toolbar);
 
         FragmentManager fragmentManager = getFragmentManager();
         Fragment loginFragment = fragmentManager.findFragmentById(R.id.fragmentContainer);
@@ -41,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    public Toolbar getToolbar() {
+        return toolbar;
     }
 
 }

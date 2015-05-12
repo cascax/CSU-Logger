@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -117,11 +118,9 @@ public class LoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         restoreStateFromArguments();
-        ActionBar bar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        if(bar != null) {
-            bar.setTitle(R.string.app_name);
-            bar.setDisplayHomeAsUpEnabled(false);
-        }
+        Toolbar toolbar = ((MainActivity)getActivity()).getToolbar();
+        toolbar.setTitle(R.string.app_name);
+        toolbar.setNavigationIcon(null);
     }
 
     @Override
