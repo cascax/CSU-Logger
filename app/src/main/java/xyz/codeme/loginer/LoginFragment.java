@@ -16,10 +16,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,6 +57,10 @@ public class LoginFragment extends Fragment {
     private CheckBox mCheckSave;
     private ImageButton mButtonRefreshIP;
     private Button mButtonSubmit;
+    private LinearLayout mLayoutAccountInfo;
+    private LinearLayout mLayoutTimeout;
+    private LinearLayout mLayoutForm;
+    private RelativeLayout mLayoutAll;
 
     private HttpUtils http;
     private SharedPreferences preferences;
@@ -78,6 +87,10 @@ public class LoginFragment extends Fragment {
         mCheckSave = (CheckBox) v.findViewById(R.id.check_save);
         mButtonRefreshIP = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
         mButtonSubmit = (Button) v.findViewById(R.id.btn_submit);
+        mLayoutAccountInfo = (LinearLayout) v.findViewById(R.id.layout_account_info);
+        mLayoutTimeout = (LinearLayout) v.findViewById(R.id.layout_timeout);
+        mLayoutForm = (LinearLayout) v.findViewById(R.id.layout_form);
+        mLayoutAll  = (RelativeLayout) v.findViewById(R.id.layout_all);
 
         mInfoAccount = (TextView) v.findViewById(R.id.info_account);
         mInfoTime = (TextView) v.findViewById(R.id.info_time);
@@ -86,7 +99,7 @@ public class LoginFragment extends Fragment {
         mInfoRemained = (TextView) v.findViewById(R.id.info_remained);
         mInfoSchoolUsed = (TextView) v.findViewById(R.id.info_schoolused);
         mInfoMoney = (TextView) v.findViewById(R.id.info_money);
-        mInfoOutTime = (TextView) v.findViewById(R.id.info_outtime);
+        mInfoOutTime = (TextView) v.findViewById(R.id.info_timeout);
 
         initOnClickListener();
         initFormPref();
@@ -95,6 +108,7 @@ public class LoginFragment extends Fragment {
             http.setIfSaveIP(false);
         http.getIP();
         initRestOfTime();
+        initAnimation();
 
         return v;
     }
@@ -207,6 +221,30 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    private void initAnimation() {
+        // 用户信息面板进入动画
+        mLayoutAccountInfo.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        int infoHeight = mLayoutAccountInfo.getHeight();
+                        int allHeight = mLayoutAll.getHeight();
+                        float rate = infoHeight * -1.0f / allHeight;
+                        TranslateAnimation translateAnimation = new TranslateAnimation(
+                                Animation.RELATIVE_TO_SELF, 0f,
+                                Animation.RELATIVE_TO_SELF, 0f,
+                                Animation.RELATIVE_TO_SELF, rate,
+                                Animation.ABSOLUTE, 0f
+                        );
+                        translateAnimation.setDuration(600);
+                        mLayoutAll.setAnimation(translateAnimation);
+                        if(mLayoutAccountInfo.getVisibility() != View.GONE)
+                            mLayoutAccountInfo.getViewTreeObserver()
+                                    .removeGlobalOnLayoutListener(this);
+                    }
+                });
+    }
+
     private void showLogoutTime(long lastLogin) {
         lastLogin += 43200000;
         if (Calendar.getInstance().getTimeInMillis() > lastLogin)
@@ -264,12 +302,17 @@ public class LoginFragment extends Fragment {
     public void showAccountInformation(AccountInfo account) {
         this.account = account;
         mInfoAccount.setText(account.getUser());
-        mInfoRemained.setText(Double.toString(account.getPublicRemained()) + " MB");
-        mInfoUsed.setText(Double.toString(account.getPublicUsed()) + " MB");
-        mInfoTotal.setText(Double.toString(account.getPublicTotal()) + " MB");
+        mInfoRemained.setText(Double.toString(
+                Math.round(account.getPublicRemained() / 10.24) / 100.0));
+        mInfoUsed.setText(Double.toString(
+                Math.round(account.getPublicUsed() / 10.24) / 100.0));
+        mInfoTotal.setText(Double.toString(
+                Math.round(account.getPublicTotal() / 10.24) / 100.0) + " GB");
         mInfoMoney.setText(Double.toString(account.getAccount()));
         mInfoSchoolUsed.setText(Double.toString(account.getSchoolUsed()) + " MB");
         mInfoTime.setText(account.getTime());
+
+        mLayoutAccountInfo.setVisibility(View.VISIBLE);
     }
 
     public void showIP(String ip) {

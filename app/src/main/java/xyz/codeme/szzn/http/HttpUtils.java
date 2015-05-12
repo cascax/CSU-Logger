@@ -1,6 +1,8 @@
 package xyz.codeme.szzn.http;
 
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +20,7 @@ import android.content.res.Resources;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -50,7 +53,7 @@ public class HttpUtils {
 
     private final LoginFragment fragment;
     private RequestQueue requestQueue;
-    private ProgressDialog progressDialog;
+    private SparseArray<ProgressDialog> progressDialogs;
 
     private int ipAccessMethod = IP_FROM_SERVER;
     private String routerURL = "";
@@ -68,6 +71,7 @@ public class HttpUtils {
     public HttpUtils(LoginFragment fragment) {
         this.fragment = fragment;
         this.requestQueue = Volley.newRequestQueue(fragment.getActivity());
+        this.progressDialogs = new SparseArray<>();
         HttpURLConnection.setFollowRedirects(false);
         this.refreshSession(false);
     }
@@ -131,14 +135,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "login:json error");
                             showToast(R.string.error_login);
                         } finally {
-                            dismissProgress();
+                            dismissProgress(R.string.text_loading_login);
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        dismissProgress();
+                        dismissProgress(R.string.text_loading_login);
                         showToast(R.string.error_login);
                         Log.e(MainActivity.TAG, "login:connect error");
                     }
@@ -184,14 +188,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "logout:json error");
                             showToast(R.string.error_logout);
                         } finally {
-                            dismissProgress();
+                            dismissProgress(R.string.text_loading_logout);
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        dismissProgress();
+                        dismissProgress(R.string.text_loading_logout);
                         showToast(R.string.error_logout);
                         Log.e(MainActivity.TAG, "logout:connect error");
                     }
@@ -313,14 +317,14 @@ public class HttpUtils {
                             Log.e(MainActivity.TAG, "getlastip:json error");
                             showToast(R.string.error_ip);
                         } finally {
-                            dismissProgress();
+                            dismissProgress(R.string.text_loading_get);
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        dismissProgress();
+                        dismissProgress(R.string.text_loading_get);
                         Log.e(MainActivity.TAG, "getlastip:connect error");
                         showToast(R.string.error_ip);
                     }
@@ -496,13 +500,18 @@ public class HttpUtils {
 
     private void showProgress(int resourceId) {
         String content = fragment.getResources().getString(resourceId);
-        progressDialog = ProgressDialog.show(fragment.getActivity(),
+        ProgressDialog progressDialog = ProgressDialog.show(fragment.getActivity(),
                 "", content, true, true);
+        progressDialogs.put(resourceId, progressDialog);
     }
 
-    private void dismissProgress() {
-        if(progressDialog != null && progressDialog.isShowing())
-            progressDialog.dismiss();
+    private void dismissProgress(int resourceId) {
+        ProgressDialog progressDialog;
+        progressDialog = progressDialogs.get(resourceId);
+        if(progressDialog != null) {
+            if(progressDialog.isShowing()) progressDialog.dismiss();
+            progressDialogs.remove(resourceId);
+        }
     }
 
     /**

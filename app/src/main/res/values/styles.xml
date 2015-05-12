@@ -10,4 +10,9 @@
         <item name="android:textColorPrimary">@color/text_primary</item>
     </style>
 
+    <style name="AccountInfo">
+        <item name="android:textColorPrimary">@color/title_primary</item>
+        <item name="android:background">@color/primary</item>
+    </style>
+
 </resources>
