@@ -251,9 +251,7 @@ public class LoginFragment extends Fragment {
             return;
         Calendar time = Calendar.getInstance();
         time.setTimeInMillis(lastLogin);
-        SimpleDateFormat dateFormat;
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        mInfoOutTime.setText(dateFormat.format(time.getTime()));
+        mInfoOutTime.setText(AccountInfo.parseDate(time));
     }
 
     /**

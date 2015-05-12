@@ -13,6 +13,11 @@ public class SettingsFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preference);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         ActionBar bar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         if(bar != null) {
             bar.setTitle(R.string.setting_title);
