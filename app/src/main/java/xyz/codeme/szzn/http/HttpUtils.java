@@ -1,8 +1,8 @@
 package xyz.codeme.szzn.http;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -42,6 +43,8 @@ import com.android.volley.toolbox.Volley;
 public class HttpUtils {
     public final static int IP_FROM_SERVER = 0xac01;
     public final static int IP_FROM_ROUTER = 0xac02;
+    public final static int CONNECTED_TRUE = 0xac11;
+    public final static int CONNECTED_FALSE = 0xac12;
 
     private final static String loginUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/login";
     private final static String logoutUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/logout";
@@ -73,7 +76,6 @@ public class HttpUtils {
         this.requestQueue = Volley.newRequestQueue(fragment.getActivity());
         this.progressDialogs = new SparseArray<>();
         HttpURLConnection.setFollowRedirects(false);
-        this.refreshSession(false);
     }
 
     /**
@@ -96,7 +98,7 @@ public class HttpUtils {
     /**
      * 登陆
      */
-    public void login(final String user, final String password, final String IP) {
+    public void loginNoSession(final String user, final String password, final String IP) {
         KeyValuePairs form = KeyValuePairs.create()
                 .add("accountID", user + "@zndx.inter")
                 .add("password", password)
@@ -209,10 +211,21 @@ public class HttpUtils {
      * 重新登陆
      */
     public void relogin(String user, String password, String ip) {
-        refreshSession(true);
         this.user = user;
         this.password = password;
         this.ip = ip;
+        logout(ip);
+        refreshSession(true);
+    }
+
+    /**
+     * 登陆(先刷新session 再登陆)
+     */
+    public void login(String user, String password, String ip) {
+        this.user = user;
+        this.password = password;
+        this.ip = ip;
+        refreshSession(true);
     }
 
     /**
@@ -361,6 +374,38 @@ public class HttpUtils {
         requestQueue.add(request);
     }
 
+    private class ConnectCheck implements Runnable {
+        private Handler handler;
+        public ConnectCheck(Handler handler) {
+            this.handler = handler;
+        }
+        @Override
+        public void run() {
+            Process p;
+            BufferedReader reader;
+            String line;
+            try
+            {
+                p = Runtime.getRuntime().exec("/system/bin/ping -c 1 -W 1 180.76.76.76");
+                reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while((line = reader.readLine()) != null) {
+                    if(line.toLowerCase().indexOf("ttl") > 0) {
+                        handler.sendEmptyMessage(CONNECTED_TRUE);
+                        return;
+                    }
+                }
+                handler.sendEmptyMessage(CONNECTED_FALSE);
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    public void isConnected(Handler handler) {
+        new Thread(new ConnectCheck(handler)).start();
+    }
+
     /**
      * 从数字中南获取IP
      */
@@ -470,8 +515,7 @@ public class HttpUtils {
     }
 
     private void refreshSuccess() {
-        logout(ip);
-        login(user, password, ip);
+        loginNoSession(user, password, ip);
     }
 
     /**

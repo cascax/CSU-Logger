@@ -5,9 +5,9 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
@@ -32,9 +32,7 @@ import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 
 import xyz.codeme.szzn.http.AccountInfo;
 import xyz.codeme.szzn.http.HttpUtils;
@@ -59,21 +57,21 @@ public class LoginFragment extends Fragment {
     private ImageButton mButtonRefreshIP;
     private Button mButtonSubmit;
     private LinearLayout mLayoutAccountInfo;
-    private LinearLayout mLayoutTimeout;
-    private LinearLayout mLayoutForm;
     private RelativeLayout mLayoutAll;
 
-    private HttpUtils http;
-    private SharedPreferences preferences;
-    private long lastLoginTime;
-    private AccountInfo account;
+    private HttpUtils mHttp;
+    private SharedPreferences mPreferences;
+    private long mLastLoginTime;
+    private AccountInfo mAccountInfo;
+    private Handler mHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        http = new HttpUtils(this);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mHttp = new HttpUtils(this);
+        mHandler = new MessageHandler();
     }
 
     @Override
@@ -89,8 +87,6 @@ public class LoginFragment extends Fragment {
         mButtonRefreshIP = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
         mButtonSubmit = (Button) v.findViewById(R.id.btn_submit);
         mLayoutAccountInfo = (LinearLayout) v.findViewById(R.id.layout_account_info);
-        mLayoutTimeout = (LinearLayout) v.findViewById(R.id.layout_timeout);
-        mLayoutForm = (LinearLayout) v.findViewById(R.id.layout_form);
         mLayoutAll  = (RelativeLayout) v.findViewById(R.id.layout_all);
 
         mInfoAccount = (TextView) v.findViewById(R.id.info_account);
@@ -105,9 +101,9 @@ public class LoginFragment extends Fragment {
         initOnClickListener();
         initFormPref();
         initRouter();
-        if (!preferences.getBoolean("if_save_ip", true))
-            http.setIfSaveIP(false);
-        http.getIP();
+        if (!mPreferences.getBoolean("if_save_ip", true))
+            mHttp.setIfSaveIP(false);
+        mHttp.getIP();
         initRestOfTime();
         initAnimation();
 
@@ -121,6 +117,7 @@ public class LoginFragment extends Fragment {
         Toolbar toolbar = ((MainActivity)getActivity()).getToolbar();
         toolbar.setTitle(R.string.app_name);
         toolbar.setNavigationIcon(null);
+        mHttp.isConnected(mHandler);
     }
 
     @Override
@@ -138,15 +135,15 @@ public class LoginFragment extends Fragment {
     private void saveStateToArguments() {
         Bundle s = getArguments();
         Bundle state = new Bundle();
-        if (account != null) {
-            state.putString("User", account.getUser());
-            state.putString("Time", account.getTime());
+        if (mAccountInfo != null) {
+            state.putString("User", mAccountInfo.getUser());
+            state.putString("Time", mAccountInfo.getTime());
             state.putDoubleArray("Rate", new double[]{
-                    account.getPublicTotal(),
-                    account.getPublicUsed(),
-                    account.getPublicRemained(),
-                    account.getSchoolUsed(),
-                    account.getAccount()
+                    mAccountInfo.getPublicTotal(),
+                    mAccountInfo.getPublicUsed(),
+                    mAccountInfo.getPublicRemained(),
+                    mAccountInfo.getSchoolUsed(),
+                    mAccountInfo.getAccount()
             });
             s.putBundle("accountState", state);
         }
@@ -180,43 +177,43 @@ public class LoginFragment extends Fragment {
     }
 
     public void initFormPref() {
-        mEditAccount.setText(preferences.getString("user", ""));
-        mEditPassword.setText(preferences.getString("password", ""));
+        mEditAccount.setText(mPreferences.getString("user", ""));
+        mEditPassword.setText(mPreferences.getString("password", ""));
     }
 
     /**
      * 获取路由器ip页,referer,cookie,ip匹配正则参数，并配置
      */
     private void initRouter() {
-        if (!preferences.getBoolean("use_router", false))
+        if (!mPreferences.getBoolean("use_router", false))
             return;
         String routerURL, routerReferer, routerCookie, routerReg;
-        routerURL = preferences.getString("router_url", getString(R.string.router_default_url));
-        routerReferer = preferences.getString("router_referer",
+        routerURL = mPreferences.getString("router_url", getString(R.string.router_default_url));
+        routerReferer = mPreferences.getString("router_referer",
                 getString(R.string.router_default_referer));
-        routerReg = preferences.getString("router_reg", getString(R.string.router_default_reg));
+        routerReg = mPreferences.getString("router_reg", getString(R.string.router_default_reg));
 
         // 装载cookie
-        routerCookie = preferences.getString("router_admin", getString(R.string.router_default_admin))
+        routerCookie = mPreferences.getString("router_admin", getString(R.string.router_default_admin))
                 + ":"
-                + preferences.getString("router_password", getString(R.string.router_default_password));
+                + mPreferences.getString("router_password", getString(R.string.router_default_password));
         routerCookie = Base64.encodeToString(routerCookie.getBytes(), Base64.DEFAULT);
         try {
             routerCookie = "Authorization=Basic%20"
                     + URLEncoder.encode(routerCookie.trim(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "router端获取IP失败，cookie组合失败");
+            Log.e(MainActivity.TAG, "router端获取IP失败，cookie组合失败");
             Toast.makeText(getActivity(), R.string.error_router, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        http.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
+        mHttp.routerConfigure(routerURL, routerReferer, routerCookie, routerReg);
     }
 
     private void initRestOfTime() {
-        lastLoginTime = preferences.getLong("lastLogin", 0);
-        if (lastLoginTime != 0) {
-            showLogoutTime(lastLoginTime);
+        mLastLoginTime = mPreferences.getLong("lastLogin", 0);
+        if (mLastLoginTime != 0) {
+            showLogoutTime(mLastLoginTime);
         }
     }
 
@@ -257,7 +254,7 @@ public class LoginFragment extends Fragment {
      * 刷新重新获取IP
      */
     public void refreshIP() {
-        http.getIP();
+        mHttp.getIP();
     }
 
     /**
@@ -265,49 +262,49 @@ public class LoginFragment extends Fragment {
      */
     public void submit() {
         int selected = (int) mSpinnerMethod.getSelectedItemId();
-        String account, password, ip;
-        account = mEditAccount.getText().toString();
+        String user, password, ip;
+        user = mEditAccount.getText().toString();
         password = mEditPassword.getText().toString();
         password = RSAEncrypt.newInstance().encryptedString(password);
         ip = mEditIP.getText().toString();
 
         switch (selected) {
             case 0:
-                http.relogin(account, password, ip);
+                mHttp.relogin(user, password, ip);
                 break;
             case 1:
-                http.login(account, password, ip);
+                mHttp.login(user, password, ip);
                 break;
             case 2:
-                http.logout(ip);
+                mHttp.logout(ip);
                 break;
         }
     }
 
     public void saveForm() {
-        SharedPreferences.Editor editor = preferences.edit();
-        lastLoginTime = Calendar.getInstance().getTimeInMillis();
-        editor.putLong("lastLogin", lastLoginTime);
+        SharedPreferences.Editor editor = mPreferences.edit();
+        mLastLoginTime = Calendar.getInstance().getTimeInMillis();
+        editor.putLong("lastLogin", mLastLoginTime);
         if (mCheckSave.isChecked()) {
             editor.putString("user", mEditAccount.getText().toString());
             editor.putString("password", mEditPassword.getText().toString());
         }
         editor.apply();
-        showLogoutTime(lastLoginTime);
+        showLogoutTime(mLastLoginTime);
     }
 
-    public void showAccountInformation(AccountInfo account) {
-        this.account = account;
-        mInfoAccount.setText(account.getUser());
+    public void showAccountInformation(AccountInfo accountInfo) {
+        this.mAccountInfo = accountInfo;
+        mInfoAccount.setText(accountInfo.getUser());
         mInfoRemained.setText(Double.toString(
-                Math.round(account.getPublicRemained() / 10.24) / 100.0));
+                Math.round(accountInfo.getPublicRemained() / 10.24) / 100.0));
         mInfoUsed.setText(Double.toString(
-                Math.round(account.getPublicUsed() / 10.24) / 100.0));
+                Math.round(accountInfo.getPublicUsed() / 10.24) / 100.0));
         mInfoTotal.setText(Double.toString(
-                Math.round(account.getPublicTotal() / 10.24) / 100.0) + " GB");
-        mInfoMoney.setText(Double.toString(account.getAccount()));
-        mInfoSchoolUsed.setText(Double.toString(account.getSchoolUsed()) + " MB");
-        mInfoTime.setText(account.getTime());
+                Math.round(accountInfo.getPublicTotal() / 10.24) / 100.0) + " GB");
+        mInfoMoney.setText(Double.toString(accountInfo.getAccount()));
+        mInfoSchoolUsed.setText(Double.toString(accountInfo.getSchoolUsed()) + " MB");
+        mInfoTime.setText(accountInfo.getTime());
 
         mLayoutAccountInfo.setVisibility(View.VISIBLE);
     }
@@ -328,19 +325,31 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
-                FragmentManager fragmentManager = getFragmentManager();
-                Fragment settingsFragment = new SettingsFragment();
-                fragmentManager.beginTransaction()
+                getFragmentManager().beginTransaction()
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .replace(R.id.fragmentContainer, settingsFragment)
+                        .replace(R.id.fragmentContainer, new SettingsFragment())
                         .addToBackStack(null)
                         .commit();
                 return true;
             case R.id.action_ip:
-                http.getLastIP(mEditAccount.getText().toString());
+                mHttp.getLastIP(mEditAccount.getText().toString());
+                mSpinnerMethod.setSelection(2);
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private class MessageHandler extends Handler {
+        public void handleMessage(Message msg) {
+            switch(msg.what) {
+                case HttpUtils.CONNECTED_TRUE:
+                    mSpinnerMethod.setSelection(0);
+                    break;
+                case HttpUtils.CONNECTED_FALSE:
+                    mSpinnerMethod.setSelection(1);
+                    break;
+            }
+        }
+    };
 }
