@@ -7,6 +7,11 @@
             android:title="@string/general_saveip"
             android:summary="@string/general_summary_saveip"
             android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="if_show_timeout"
+            android:title="@string/general_timeout"
+            android:summary="@string/general_summary_timeout"
+            android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -21,7 +26,7 @@
             android:dependency="use_router"
             android:title="@string/router_url"
             android:defaultValue="@string/router_default_url"
-            android:summary="@string/router_default_url"
+            android:summary="@string/router_summary_url"
             android:selectAllOnFocus="true" />
 
         <EditTextPreference
@@ -29,7 +34,7 @@
             android:dependency="use_router"
             android:title="@string/router_referer"
             android:defaultValue="@string/router_default_referer"
-            android:summary="@string/router_default_referer"
+            android:summary="@string/router_summary_referer"
             android:selectAllOnFocus="true" />
 
         <EditTextPreference
@@ -37,7 +42,7 @@
             android:dependency="use_router"
             android:title="@string/router_admin"
             android:defaultValue="@string/router_default_admin"
-            android:summary="@string/router_default_admin"
+            android:summary="@string/router_summary_admin"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:maxLines="1" />
@@ -48,7 +53,7 @@
             android:title="@string/router_password"
             android:defaultValue="@string/router_default_password"
             android:inputType="textPassword"
-            android:summary="@string/router_default_password"
+            android:summary="@string/router_summary_password"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:maxLines="1" />

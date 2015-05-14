@@ -57,6 +57,7 @@ public class LoginFragment extends Fragment {
     private ImageButton mButtonRefreshIP;
     private Button mButtonSubmit;
     private LinearLayout mLayoutAccountInfo;
+    private LinearLayout mLayoutTimeout;
     private RelativeLayout mLayoutAll;
 
     private HttpUtils mHttp;
@@ -87,6 +88,7 @@ public class LoginFragment extends Fragment {
         mButtonRefreshIP = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
         mButtonSubmit = (Button) v.findViewById(R.id.btn_submit);
         mLayoutAccountInfo = (LinearLayout) v.findViewById(R.id.layout_account_info);
+        mLayoutTimeout = (LinearLayout) v.findViewById(R.id.layout_timeout);
         mLayoutAll  = (RelativeLayout) v.findViewById(R.id.layout_all);
 
         mInfoAccount = (TextView) v.findViewById(R.id.info_account);
@@ -101,8 +103,10 @@ public class LoginFragment extends Fragment {
         initOnClickListener();
         initFormPref();
         initRouter();
-        if (!mPreferences.getBoolean("if_save_ip", true))
+        if (! mPreferences.getBoolean("if_save_ip", true))
             mHttp.setIfSaveIP(false);
+        if (! mPreferences.getBoolean("if_show_timeout", true))
+            mLayoutTimeout.setVisibility(View.GONE);
         mHttp.getIP();
         initRestOfTime();
         initAnimation();
@@ -242,6 +246,8 @@ public class LoginFragment extends Fragment {
     }
 
     private void showLogoutTime(long lastLogin) {
+        if(mLayoutTimeout.getVisibility() != View.VISIBLE)
+            return;
         lastLogin += 43200000;
         if (Calendar.getInstance().getTimeInMillis() > lastLogin)
             return;
