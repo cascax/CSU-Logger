@@ -9,16 +9,18 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import xyz.codeme.loginer.LoginFragment;
 import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
+import xyz.codeme.loginer.data.MessageBuilder;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.SparseArray;
@@ -45,6 +47,10 @@ public class HttpUtils {
     public final static int IP_FROM_ROUTER = 0xac02;
     public final static int CONNECTED_TRUE = 0xac11;
     public final static int CONNECTED_FALSE = 0xac12;
+    public final static int GET_IP_SUCCESS = 0xac13;
+    public final static int LONIN_SUCCESS = 0xac14;
+    public final static int GET_ACCOUNT_SUCCESS = 0xac15;
+    public final static int GET_VERSION = 0xac16;
 
     private final static String loginUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/login";
     private final static String logoutUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/logout";
@@ -53,8 +59,10 @@ public class HttpUtils {
     // 192.168.56.1/sz/ szzn.sinaapp.com/ codeme.xyz/api/
     private final static String saveUrl = "http://codeme.xyz/api/saveip.php";
     private final static String getipUrl = "http://codeme.xyz/api/getip.php";
+    private final static String versionUrl = "http://codeme.xyz/api/version.php";
 
-    private final LoginFragment fragment;
+    private final Fragment fragment;
+    private final Handler handler;
     private RequestQueue requestQueue;
     private SparseArray<ProgressDialog> progressDialogs;
 
@@ -71,8 +79,9 @@ public class HttpUtils {
     private boolean ifConnected = false;
     private boolean ifSaveIP = true;
 
-    public HttpUtils(LoginFragment fragment) {
+    public HttpUtils(Fragment fragment, Handler handler) {
         this.fragment = fragment;
+        this.handler = handler;
         this.requestQueue = Volley.newRequestQueue(fragment.getActivity());
         this.progressDialogs = new SparseArray<>();
         HttpURLConnection.setFollowRedirects(false);
@@ -127,7 +136,7 @@ public class HttpUtils {
                                     getInformation();
                                 if(ifSaveIP)
                                     saveIP(user, IP);
-                                fragment.saveForm();
+                                handler.sendEmptyMessage(LONIN_SUCCESS);
                                 return;
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
@@ -246,7 +255,11 @@ public class HttpUtils {
             return;
         }
         if (ip != null) {
-            fragment.showIP(ip);
+            handler.sendMessage(MessageBuilder.simpleMessage(
+                    GET_IP_SUCCESS,
+                    "IP",
+                    ip
+            ));
             return;
         }
         Log.w(MainActivity.TAG, "local端获取IP失败");
@@ -320,7 +333,11 @@ public class HttpUtils {
                             if (resultCode == 0) {
                                 String ip = jsonObj.getString("ip");
 //                				String time = jsonObj.getString("time");
-                                fragment.showIP(ip);
+                                handler.sendMessage(MessageBuilder.simpleMessage(
+                                        GET_IP_SUCCESS,
+                                        "IP",
+                                        ip
+                                ));
                             } else {
                                 log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
                                 Log.e(MainActivity.TAG, "getlastip:" + log);
@@ -361,7 +378,10 @@ public class HttpUtils {
                     @Override
                     public void onResponse(String content) {
                         AccountInfo account = new AccountInfo(content);
-                        fragment.showAccountInformation(account);
+                        handler.sendMessage(MessageBuilder.bundleMessage(
+                                GET_ACCOUNT_SUCCESS,
+                                account.parseBundle()
+                        ));
                     }
                 },
                 new Response.ErrorListener() {
@@ -402,10 +422,55 @@ public class HttpUtils {
         }
     };
 
-    public void isConnected(Handler handler) {
+    /**
+     * 检查是否在线
+     */
+    public void isConnected() {
         new Thread(new ConnectCheck(handler)).start();
     }
 
+    public void checkUpdate() {
+        showProgress(R.string.text_loading_update);
+
+        FluentJsonRequest jsonRequest = new FluentJsonRequest(
+                HttpUtils.versionUrl,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject jsonObj) {
+                        try {
+                            int resultCode = jsonObj.getInt("code");
+                            if (resultCode == 0) {
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("versionCode", jsonObj.getInt("versionCode"));
+                                bundle.putString("versionName", jsonObj.getString("versionName"));
+                                handler.sendMessage(MessageBuilder.bundleMessage(
+                                        GET_VERSION,
+                                        bundle
+                                ));
+                            } else {
+                                Log.e(MainActivity.TAG, "CheckUpdate:server error");
+                                showToast(R.string.error_update);
+                            }
+                        } catch (JSONException e) {
+                            Log.e(MainActivity.TAG, "CheckUpdate:json error");
+                            showToast(R.string.error_update);
+                        } finally {
+                            dismissProgress(R.string.text_loading_update);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0) {
+                        dismissProgress(R.string.text_loading_update);
+                        Log.e(MainActivity.TAG, "CheckUpdate:connect error");
+                        showToast(R.string.error_update);
+                    }
+                });
+
+        requestQueue.add(jsonRequest);
+    }
     /**
      * 从数字中南获取IP
      */
@@ -427,7 +492,11 @@ public class HttpUtils {
                         Pattern pattern = Pattern.compile("10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
                         Matcher match = pattern.matcher(content);
                         if (match.find()) {
-                            fragment.showIP(match.group(0));
+                            handler.sendMessage(MessageBuilder.simpleMessage(
+                                    GET_IP_SUCCESS,
+                                    "IP",
+                                    match.group(0)
+                            ));
                             Log.i(MainActivity.TAG, "getIPFromServer:success");
                         } else {
                             Log.w(MainActivity.TAG, "server端获取IP失败");
@@ -462,7 +531,11 @@ public class HttpUtils {
                         Pattern pattern = Pattern.compile(routerReg);
                         Matcher match = pattern.matcher(content);
                         if (match.find()) {
-                            fragment.showIP(match.group(0));
+                            handler.sendMessage(MessageBuilder.simpleMessage(
+                                    GET_IP_SUCCESS,
+                                    "IP",
+                                    match.group(0)
+                            ));
                             Log.i(MainActivity.TAG, "getIPFromRouter:success");
                         } else {
                             Log.w(MainActivity.TAG, "router端获取IP失败");

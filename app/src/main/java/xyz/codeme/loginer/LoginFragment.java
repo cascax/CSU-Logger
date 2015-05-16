@@ -71,8 +71,8 @@ public class LoginFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mHttp = new HttpUtils(this);
         mHandler = new MessageHandler();
+        mHttp = new HttpUtils(this, mHandler);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class LoginFragment extends Fragment {
         Toolbar toolbar = ((MainActivity)getActivity()).getToolbar();
         toolbar.setTitle(R.string.app_name);
         toolbar.setNavigationIcon(null);
-        mHttp.isConnected(mHandler);
+        mHttp.isConnected();
     }
 
     @Override
@@ -138,17 +138,8 @@ public class LoginFragment extends Fragment {
 
     private void saveStateToArguments() {
         Bundle s = getArguments();
-        Bundle state = new Bundle();
         if (mAccountInfo != null) {
-            state.putString("User", mAccountInfo.getUser());
-            state.putString("Time", mAccountInfo.getTime());
-            state.putDoubleArray("Rate", new double[]{
-                    mAccountInfo.getPublicTotal(),
-                    mAccountInfo.getPublicUsed(),
-                    mAccountInfo.getPublicRemained(),
-                    mAccountInfo.getSchoolUsed(),
-                    mAccountInfo.getAccount()
-            });
+            Bundle state = mAccountInfo.parseBundle();
             s.putBundle("accountState", state);
         }
     }
@@ -157,11 +148,7 @@ public class LoginFragment extends Fragment {
         Bundle s = getArguments();
         Bundle state = s.getBundle("accountState");
         if(state != null) {
-            showAccountInformation(new AccountInfo(
-                    state.getString("User"),
-                    state.getString("Time"),
-                    state.getDoubleArray("Rate")
-            ));
+            showAccountInformation(new AccountInfo(state));
         }
     }
 
@@ -354,6 +341,15 @@ public class LoginFragment extends Fragment {
                     break;
                 case HttpUtils.CONNECTED_FALSE:
                     mSpinnerMethod.setSelection(1);
+                    break;
+                case HttpUtils.LONIN_SUCCESS:
+                    saveForm();
+                    break;
+                case HttpUtils.GET_IP_SUCCESS:
+                    showIP(msg.getData().getString("IP"));
+                    break;
+                case HttpUtils.GET_ACCOUNT_SUCCESS:
+                    showAccountInformation(new AccountInfo(msg.getData()));
                     break;
             }
         }

@@ -1,5 +1,7 @@
 package xyz.codeme.szzn.http;
 
+import android.os.Bundle;
+
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,14 +39,29 @@ public class AccountInfo {
         }
     }
 
-    public AccountInfo(String user, String time, double[] rate) {
-        this.user = user;
-        this.timeStr = time;
+    public AccountInfo(Bundle state) {
+        this.user = state.getString("User");
+        this.timeStr = state.getString("Time");
+        double[] rate = state.getDoubleArray("Rate");
         this.publicTotal = rate[0];
         this.publicUsed = rate[1];
         this.publicRemained = rate[2];
         this.schoolUsed = rate[3];
         this.account = rate[4];
+    }
+
+    public Bundle parseBundle() {
+        Bundle state = new Bundle();
+        state.putString("User", user);
+        state.putString("Time", getTime());
+        state.putDoubleArray("Rate", new double[]{
+                publicTotal,
+                publicUsed,
+                publicRemained,
+                schoolUsed,
+                account
+        });
+        return state;
     }
 
     public static String parseDate(Calendar time) {
