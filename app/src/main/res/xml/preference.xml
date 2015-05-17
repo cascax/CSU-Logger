@@ -75,9 +75,9 @@
         <Preference
             android:key="check_update"
             android:title="@string/other_update" />
-        <!--<Preference-->
-            <!--android:key="about_me"-->
-            <!--android:title="@string/other_aboutme" />-->
+        <Preference
+            android:key="about_me"
+            android:title="@string/other_aboutme" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -57,7 +57,15 @@ public class SettingsFragment extends PreferenceFragment {
                 new HttpUtils(this, mHandle).checkUpdate();
                 return true;
             case "about_me":
-                Log.d("LoginerLogin", "aboutme");
+                new AlertDialog.Builder(getActivity())
+                        .setIcon(R.mipmap.ic_launcher)
+                        .setTitle(String.format(
+                                getResources().getString(R.string.text_now_version),
+                                getVersionName()
+                        ))
+                        .setMessage(R.string.text_about_me)
+                        .setPositiveButton(R.string.btn_ok, null)
+                        .show();
                 return true;
             default:
                 return false;
@@ -113,7 +121,17 @@ public class SettingsFragment extends PreferenceFragment {
             e.printStackTrace();
             return 0;
         }
+    }
 
+    private String getVersionName() {
+        try {
+            PackageInfo info = getActivity().getPackageManager()
+                    .getPackageInfo(getActivity().getPackageName(), 0);
+            return info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     private class MessageHandler extends Handler {
