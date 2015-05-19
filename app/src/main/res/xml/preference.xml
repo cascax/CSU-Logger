@@ -2,12 +2,12 @@
 
     <PreferenceCategory
         android:title="@string/general_title">
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="if_save_ip"
             android:title="@string/general_saveip"
             android:summary="@string/general_summary_saveip"
             android:defaultValue="true" />
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="if_show_timeout"
             android:title="@string/general_timeout"
             android:summary="@string/general_summary_timeout"
