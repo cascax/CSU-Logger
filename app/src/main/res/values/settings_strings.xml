@@ -3,13 +3,15 @@
     <string name="setting_title">设置</string>
 
     <string name="general_title">通用</string>
+    <string name="general_auto_login">自动登录</string>
+    <string name="general_summary_auto_login">打开应用不在线自动登陆</string>
     <string name="general_saveip">保存IP</string>
     <string name="general_summary_saveip">将IP保存在远端服务器便于异地下线</string>
     <string name="general_timeout">显示下线时间</string>
     <string name="general_summary_timeout">计算12小时后自动掉线时间</string>
 
     <string name="router_title">路由器配置</string>
-    <string name="router_ifuse">是否使用路由器</string>
+    <string name="router_ifuse">使用路由器</string>
     <string name="router_url">获取IP页</string>
     <string name="router_default_url">http://192.168.1.1/userRpm/StatusRpm.htm</string>
     <string name="router_summary_url">路由器信息实际页面，其中包含WAN口IP</string>

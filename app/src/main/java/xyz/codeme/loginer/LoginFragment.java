@@ -341,6 +341,10 @@ public class LoginFragment extends Fragment {
                     break;
                 case HttpUtils.CONNECTED_FALSE:
                     mSpinnerMethod.setSelection(1);
+                    if (mPreferences.getBoolean("if_auto_login", false)
+                            && mEditIP.getText().toString().length()  > 0 ) {
+                        submit();
+                    }
                     break;
                 case HttpUtils.LONIN_SUCCESS:
                     saveForm();

@@ -3,6 +3,11 @@
     <PreferenceCategory
         android:title="@string/general_title">
         <SwitchPreference
+            android:key="if_auto_login"
+            android:title="@string/general_auto_login"
+            android:summary="@string/general_summary_auto_login"
+            android:defaultValue="false" />
+        <SwitchPreference
             android:key="if_save_ip"
             android:title="@string/general_saveip"
             android:summary="@string/general_summary_saveip"
