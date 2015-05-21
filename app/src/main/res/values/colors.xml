@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">#32B3B3</color>
-    <color name="primary_dark">#149999</color>
+    <!--<color name="primary_dark">#149999</color>-->
+    <color name="primary_dark">#32B3B3</color>
     <color name="primary_light">#85DFDF</color>
     <color name="text_primary">#000</color>
     <color name="title_primary">#FFF</color>

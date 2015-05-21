@@ -338,10 +338,11 @@ public class HttpUtils {
                                         "IP",
                                         ip
                                 ));
+                                showToast(R.string.success_last_ip);
                             } else {
                                 log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
                                 Log.e(MainActivity.TAG, "getlastip:" + log);
-                                showMessage(R.string.error_ip, log);
+                                showMessage(R.string.error_ip, jsonObj.getString("msg"));
                             }
                         } catch (JSONException e) {
                             Log.e(MainActivity.TAG, "getlastip:json error");

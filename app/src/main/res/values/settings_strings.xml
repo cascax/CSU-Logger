@@ -13,7 +13,7 @@
     <string name="router_title">路由器配置</string>
     <string name="router_ifuse">使用路由器</string>
     <string name="router_url">获取IP页</string>
-    <string name="router_default_url">http://192.168.1.1/userRpm/StatusRpm.htm</string>
+    <string name="router_default_url">/userRpm/StatusRpm.htm</string>
     <string name="router_summary_url">路由器信息实际页面，其中包含WAN口IP</string>
     <string name="router_referer">管理主页</string>
     <string name="router_default_referer">http://192.168.1.1</string>

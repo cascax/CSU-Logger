@@ -3,6 +3,7 @@ package xyz.codeme.loginer;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -118,9 +119,6 @@ public class LoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         restoreStateFromArguments();
-        Toolbar toolbar = ((MainActivity)getActivity()).getToolbar();
-        toolbar.setTitle(R.string.app_name);
-        toolbar.setNavigationIcon(null);
         mHttp.isConnected();
     }
 
@@ -179,9 +177,10 @@ public class LoginFragment extends Fragment {
         if (!mPreferences.getBoolean("use_router", false))
             return;
         String routerURL, routerReferer, routerCookie, routerReg;
-        routerURL = mPreferences.getString("router_url", getString(R.string.router_default_url));
         routerReferer = mPreferences.getString("router_referer",
                 getString(R.string.router_default_referer));
+        routerURL = routerReferer + mPreferences.getString("router_url",
+                getString(R.string.router_default_url));
         routerReg = mPreferences.getString("router_reg", getString(R.string.router_default_reg));
 
         // 装载cookie
@@ -318,11 +317,8 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
-                getFragmentManager().beginTransaction()
-                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .replace(R.id.fragmentContainer, new SettingsFragment())
-                        .addToBackStack(null)
-                        .commit();
+                Intent i = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(i);
                 return true;
             case R.id.action_ip:
                 mHttp.getLastIP(mEditAccount.getText().toString());

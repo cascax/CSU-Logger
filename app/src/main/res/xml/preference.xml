@@ -27,19 +27,19 @@
             android:title="@string/router_ifuse" />
 
         <EditTextPreference
-            android:key="router_url"
-            android:dependency="use_router"
-            android:title="@string/router_url"
-            android:defaultValue="@string/router_default_url"
-            android:summary="@string/router_summary_url"
-            android:selectAllOnFocus="true" />
-
-        <EditTextPreference
             android:key="router_referer"
             android:dependency="use_router"
             android:title="@string/router_referer"
             android:defaultValue="@string/router_default_referer"
             android:summary="@string/router_summary_referer"
+            android:selectAllOnFocus="true" />
+
+        <EditTextPreference
+            android:key="router_url"
+            android:dependency="use_router"
+            android:title="@string/router_url"
+            android:defaultValue="@string/router_default_url"
+            android:summary="@string/router_summary_url"
             android:selectAllOnFocus="true" />
 
         <EditTextPreference

@@ -5,28 +5,26 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 
-public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "LoginerMain";
+public class SettingsActivity extends AppCompatActivity {
     private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_settings);
 
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        toolbar.setTitle(R.string.app_name);
+        toolbar.setTitle(R.string.setting_title);
+        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
         setSupportActionBar(toolbar);
 
         FragmentManager fragmentManager = getFragmentManager();
-        Fragment loginFragment = fragmentManager.findFragmentById(R.id.fragmentContainer);
-        if(loginFragment == null) {
-            loginFragment = new LoginFragment();
-            loginFragment.setArguments(new Bundle());
+        Fragment settingsFragment = fragmentManager.findFragmentById(R.id.fragmentContainer);
+        if(settingsFragment == null) {
+            settingsFragment = new SettingsFragment();
             fragmentManager.beginTransaction()
-                    .add(R.id.fragmentContainer, loginFragment)
+                    .add(R.id.fragmentContainer, settingsFragment)
                     .commit();
         }
     }
@@ -34,5 +32,4 @@ public class MainActivity extends AppCompatActivity {
     public Toolbar getToolbar() {
         return toolbar;
     }
-
 }
