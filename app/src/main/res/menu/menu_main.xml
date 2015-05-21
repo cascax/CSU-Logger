@@ -4,9 +4,14 @@
 
     <item
         android:id="@+id/action_ip"
-        android:orderInCategory="99"
+        android:orderInCategory="98"
         app:showAsAction="never"
         android:title="@string/action_ip"/>
+    <item
+        android:id="@+id/action_increment"
+        android:orderInCategory="99"
+        app:showAsAction="never"
+        android:title="@string/action_increment"/>
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

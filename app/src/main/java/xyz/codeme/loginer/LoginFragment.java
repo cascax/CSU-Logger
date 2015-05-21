@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -246,6 +247,7 @@ public class LoginFragment extends Fragment {
      * 刷新重新获取IP
      */
     public void refreshIP() {
+        initRouter();
         mHttp.getIP();
     }
 
@@ -317,12 +319,19 @@ public class LoginFragment extends Fragment {
 
         switch (id) {
             case R.id.action_settings:
-                Intent i = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(i);
+                Intent settings = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(settings);
                 return true;
             case R.id.action_ip:
                 mHttp.getLastIP(mEditAccount.getText().toString());
                 mSpinnerMethod.setSelection(2);
+                return true;
+            case R.id.action_increment:
+                Intent increment = new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(getResources().getString(R.string.increment_url))
+                );
+                startActivity(increment);
                 return true;
         }
 

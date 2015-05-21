@@ -29,8 +29,10 @@
     <string name="btn_ok">确定</string>
     <string name="btn_ip">重新获取IP</string>
     <string name="btn_cancel">取消</string>
+
     <string name="action_ip">获取上次登录IP</string>
     <string name="action_settings">设置</string>
+    <string name="action_increment">充值</string>
 
     <string name="success_login">登陆成功</string>
     <string name="success_logout">下线成功</string>
@@ -44,4 +46,6 @@
     <string name="error_nowifi">没有连接WiFi</string>
     <string name="error_update">服务器连接失败</string>
     <string name="msg_online">已经在线，无法获取IP</string>
+
+    <string name="increment_url">http://hn.189.cn/hnselfservice/topup/topup!topupIndex.action?isCorp=0</string>
 </resources>
