@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import xyz.codeme.loginer.MainActivity;
 import xyz.codeme.loginer.R;
 import xyz.codeme.loginer.data.MessageBuilder;
 
@@ -51,7 +50,8 @@ public class HttpUtils {
     public final static int LONIN_SUCCESS = 0xac14;
     public final static int GET_ACCOUNT_SUCCESS = 0xac15;
     public final static int GET_VERSION = 0xac16;
-
+    
+    private final static String TAG = "LoggerHttp";
     private final static String loginUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/login";
     private final static String logoutUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/logout";
     private final static String mainUrl = "http://61.137.86.87:8080/portalNat444/index.jsp";
@@ -71,13 +71,11 @@ public class HttpUtils {
     private String routerReferer = "";
     private String routerCookie = "";
     private String routerReg = "";
-    private String session = "";
     private String log = "";
+    private boolean ifSaveIP = true;
     private String user;
     private String password;
     private String ip;
-    private boolean ifConnected = false;
-    private boolean ifSaveIP = true;
 
     public HttpUtils(Fragment fragment, Handler handler) {
         this.fragment = fragment;
@@ -107,15 +105,14 @@ public class HttpUtils {
     /**
      * 登陆
      */
-    public void loginNoSession(final String user, final String password, final String IP) {
+    public void login(final String user, final String password, final String IP) {
         KeyValuePairs form = KeyValuePairs.create()
                 .add("accountID", user + "@zndx.inter")
                 .add("password", password)
                 .add("brasAddress", "59df7586")
                 .add("userIntranetAddress", IP);
         KeyValuePairs headers = KeyValuePairs.create()
-                .add("Referer", HttpUtils.mainUrl)
-                .add("Cookie", "JSESSIONID=" + this.session);
+                .add("Referer", HttpUtils.mainUrl);
 
         showProgress(R.string.text_loading_login);
 
@@ -129,11 +126,9 @@ public class HttpUtils {
                             int resultCode = jsonObj.getInt("resultCode");
                             if (resultCode == 0) {
                                 log = parseCode(resultCode);
-                                ifConnected = true;
                                 showToast(R.string.success_login);
-                                Log.i(MainActivity.TAG, "login:success");
-                                if (session.length() > 0)
-                                    getInformation();
+                                Log.i(TAG, "login:success");
+                                getInformation(jsonObj);
                                 if(ifSaveIP)
                                     saveIP(user, IP);
                                 handler.sendEmptyMessage(LONIN_SUCCESS);
@@ -141,9 +136,9 @@ public class HttpUtils {
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
                             showMessage(R.string.error_login, log);
-                            Log.e(MainActivity.TAG, "login:" + log);
+                            Log.e(TAG, "login:" + log);
                         } catch (JSONException e) {
-                            Log.e(MainActivity.TAG, "login:json error");
+                            Log.e(TAG, "login:json error");
                             showToast(R.string.error_login);
                         } finally {
                             dismissProgress(R.string.text_loading_login);
@@ -155,7 +150,7 @@ public class HttpUtils {
                     public void onErrorResponse(VolleyError arg0) {
                         dismissProgress(R.string.text_loading_login);
                         showToast(R.string.error_login);
-                        Log.e(MainActivity.TAG, "login:connect error");
+                        Log.e(TAG, "login:connect error");
                     }
                 });
         jsonRequest.setHeaders(headers.build());
@@ -164,11 +159,19 @@ public class HttpUtils {
     }
 
     /**
-     * 下线
-     *
+     * 不回调下线
      * @param IP 需下线IP，任何IP均可
      */
     public void logout(final String IP) {
+        logout(IP, false);
+    }
+
+    /**
+     * 下线
+     * @param IP 需下线IP，任何IP均可
+     * @param callback 是否回调
+     */
+    public void logout(final String IP, final boolean callback) {
         KeyValuePairs form = KeyValuePairs.create()
                 .add("brasAddress", "59df7586")
                 .add("userIntranetAddress", IP);
@@ -187,16 +190,16 @@ public class HttpUtils {
                             int resultCode = jsonObj.getInt("resultCode");
                             if (resultCode == 0) {
                                 log = parseCode(resultCode);
-                                ifConnected = false;
                                 showToast(R.string.success_logout);
-                                Log.i(MainActivity.TAG, "logout:success");
+                                Log.i(TAG, "logout:success");
+                                if(callback) logoutSuccess(); // 回调，用来重新登陆
                                 return;
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
                             showMessage(R.string.error_logout, log);
-                            Log.e(MainActivity.TAG, "logout:" + log);
+                            Log.e(TAG, "logout:" + log);
                         } catch (JSONException e) {
-                            Log.e(MainActivity.TAG, "logout:json error");
+                            Log.e(TAG, "logout:json error");
                             showToast(R.string.error_logout);
                         } finally {
                             dismissProgress(R.string.text_loading_logout);
@@ -208,12 +211,19 @@ public class HttpUtils {
                     public void onErrorResponse(VolleyError arg0) {
                         dismissProgress(R.string.text_loading_logout);
                         showToast(R.string.error_logout);
-                        Log.e(MainActivity.TAG, "logout:connect error");
+                        Log.e(TAG, "logout:connect error");
                     }
                 });
         jsonRequest.setHeaders(headers.build());
 
         requestQueue.add(jsonRequest);
+    }
+
+    /**
+     * 下线函数的回调函数
+     */
+    private void logoutSuccess() {
+        login(user, password, ip);
     }
 
     /**
@@ -223,18 +233,7 @@ public class HttpUtils {
         this.user = user;
         this.password = password;
         this.ip = ip;
-        logout(ip);
-        refreshSession(true);
-    }
-
-    /**
-     * 登陆(先刷新session 再登陆)
-     */
-    public void login(String user, String password, String ip) {
-        this.user = user;
-        this.password = password;
-        this.ip = ip;
-        refreshSession(true);
+        logout(ip, true);
     }
 
     /**
@@ -242,6 +241,7 @@ public class HttpUtils {
      */
     public void getIP() {
         String ip = null;
+        // 先从设备获取IP，是10.96开头则显示
         WifiManager wifiManager;
         wifiManager = (WifiManager) fragment.getActivity().getSystemService(Context.WIFI_SERVICE);
         if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED) {
@@ -251,6 +251,7 @@ public class HttpUtils {
                 ip = "10.96." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
             }
         } else {
+            // 没有连接WiFi
             showToast(R.string.error_nowifi);
             return;
         }
@@ -262,7 +263,7 @@ public class HttpUtils {
             ));
             return;
         }
-        Log.w(MainActivity.TAG, "local端获取IP失败");
+        Log.w(TAG, "local端获取IP失败");
         switch (this.ipAccessMethod) {
             case IP_FROM_SERVER:
                 getIPFromServer();
@@ -294,17 +295,17 @@ public class HttpUtils {
                             int resultCode = jsonObj.getInt("code");
                             if (resultCode != 0) {
                                 log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
-                                Log.w(MainActivity.TAG, "saveip:" + log);
+                                Log.w(TAG, "saveip:" + log);
                             }
                         } catch (JSONException e) {
-                            Log.e(MainActivity.TAG, "saveip:json error");
+                            Log.e(TAG, "saveip:json error");
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        Log.e(MainActivity.TAG, "saveip:connect error");
+                        Log.e(TAG, "saveip:connect error");
                     }
                 });
 
@@ -340,12 +341,12 @@ public class HttpUtils {
                                 ));
                                 showToast(R.string.success_last_ip);
                             } else {
-                                log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
-                                Log.e(MainActivity.TAG, "getlastip:" + log);
+                                log = resultCode + ":" + jsonObj.getString("msg");
+                                Log.e(TAG, "getlastip:" + log);
                                 showMessage(R.string.error_ip, jsonObj.getString("msg"));
                             }
                         } catch (JSONException e) {
-                            Log.e(MainActivity.TAG, "getlastip:json error");
+                            Log.e(TAG, "getlastip:json error");
                             showToast(R.string.error_ip);
                         } finally {
                             dismissProgress(R.string.text_loading_get);
@@ -356,7 +357,7 @@ public class HttpUtils {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
                         dismissProgress(R.string.text_loading_get);
-                        Log.e(MainActivity.TAG, "getlastip:connect error");
+                        Log.e(TAG, "getlastip:connect error");
                         showToast(R.string.error_ip);
                     }
                 });
@@ -367,32 +368,17 @@ public class HttpUtils {
     /**
      * 获取用户信息
      */
-    public void getInformation() {
-        KeyValuePairs headers = KeyValuePairs.create()
-                .add("Referer", HttpUtils.mainUrl)
-                .add("Cookie", "JSESSIONID=" + this.session);
-
-        FluentStringRequest request = new FluentStringRequest(
-                Request.Method.GET,
-                HttpUtils.showUrl,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String content) {
-                        AccountInfo account = new AccountInfo(content);
-                        handler.sendMessage(MessageBuilder.bundleMessage(
-                                GET_ACCOUNT_SUCCESS,
-                                account.parseBundle()
-                        ));
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError arg0) {
-                        showToast(R.string.error_account);
-                    }
-                });
-        request.setHeaders(headers.build());
-        requestQueue.add(request);
+    public void getInformation(JSONObject jsonObj) {
+        try {
+            AccountInfo account = new AccountInfo(jsonObj);
+            handler.sendMessage(MessageBuilder.bundleMessage(
+                    GET_ACCOUNT_SUCCESS,
+                    account.parseBundle()
+            ));
+        } catch(JSONException e) {
+            showToast(R.string.error_account);
+            Log.w(TAG, "getInformation:error");
+        }
     }
 
     private class ConnectCheck implements Runnable {
@@ -421,7 +407,7 @@ public class HttpUtils {
                 e.printStackTrace();
             }
         }
-    };
+    }
 
     /**
      * 检查是否在线
@@ -450,11 +436,11 @@ public class HttpUtils {
                                         bundle
                                 ));
                             } else {
-                                Log.e(MainActivity.TAG, "CheckUpdate:server error");
+                                Log.e(TAG, "CheckUpdate:server error");
                                 showToast(R.string.error_update);
                             }
                         } catch (JSONException e) {
-                            Log.e(MainActivity.TAG, "CheckUpdate:json error");
+                            Log.e(TAG, "CheckUpdate:json error");
                             showToast(R.string.error_update);
                         } finally {
                             dismissProgress(R.string.text_loading_update);
@@ -465,7 +451,7 @@ public class HttpUtils {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
                         dismissProgress(R.string.text_loading_update);
-                        Log.e(MainActivity.TAG, "CheckUpdate:connect error");
+                        Log.e(TAG, "CheckUpdate:connect error");
                         showToast(R.string.error_update);
                     }
                 });
@@ -484,9 +470,8 @@ public class HttpUtils {
                     public void onResponse(String content) {
                         if (content.indexOf("百度") > 0) // 当前在线
                         {
-                            ifConnected = true;
                             showToast(R.string.msg_online);
-                            Log.w(MainActivity.TAG, "server端获取IP失败，在线");
+                            Log.w(TAG, "server端获取IP失败，在线");
                             return;
                         }
 
@@ -498,9 +483,9 @@ public class HttpUtils {
                                     "IP",
                                     match.group(0)
                             ));
-                            Log.i(MainActivity.TAG, "getIPFromServer:success");
+                            Log.i(TAG, "getIPFromServer:success");
                         } else {
-                            Log.w(MainActivity.TAG, "server端获取IP失败");
+                            Log.w(TAG, "server端获取IP失败");
                             showToast(R.string.error_ip);
                         }
                     }
@@ -508,7 +493,7 @@ public class HttpUtils {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        Log.w(MainActivity.TAG, "server端获取IP失败");
+                        Log.w(TAG, "server端获取IP失败");
                         showToast(R.string.error_ip);
                     }
                 });
@@ -537,9 +522,9 @@ public class HttpUtils {
                                     "IP",
                                     match.group(0)
                             ));
-                            Log.i(MainActivity.TAG, "getIPFromRouter:success");
+                            Log.i(TAG, "getIPFromRouter:success");
                         } else {
-                            Log.w(MainActivity.TAG, "router端获取IP失败");
+                            Log.w(TAG, "router端获取IP失败");
                             showToast(R.string.error_router);
                             getIPFromServer();
                         }
@@ -548,48 +533,13 @@ public class HttpUtils {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError arg0) {
-                        Log.w(MainActivity.TAG, "router端获取IP失败");
+                        Log.w(TAG, "router端获取IP失败");
                         showToast(R.string.error_router);
                         getIPFromServer();
                     }
                 });
         request.setHeaders(headers.build());
         requestQueue.add(request);
-    }
-
-    /**
-     * 获取整个过程session
-     */
-    private void refreshSession(final boolean ifAnnounce) {
-        FluentStringRequest request = new FluentStringRequest(
-                Request.Method.GET,
-                HttpUtils.mainUrl,
-                true,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String headers) {
-                        Pattern pattern = Pattern.compile("JSESSIONID=([^;]+);");
-                        Matcher match = pattern.matcher(headers);
-                        if (match.find()) {
-                            session = match.group(1);
-                            Log.i(MainActivity.TAG, "session refresh success");
-                            if (ifAnnounce)
-                                refreshSuccess();
-                        } else
-                            Log.w(MainActivity.TAG, "获取session失败");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError arg0) {
-                        Log.w(MainActivity.TAG, "获取session失败");
-                    }
-                });
-        requestQueue.add(request);
-    }
-
-    private void refreshSuccess() {
-        loginNoSession(user, password, ip);
     }
 
     /**
@@ -675,20 +625,6 @@ public class HttpUtils {
             default:
                 return "未知错误";
         }
-    }
-
-    /**
-     * 获取登陆/下线日志信息
-     */
-    public String getLog() {
-        return log;
-    }
-
-    /**
-     * 获取当前状态(可能不准确)
-     */
-    public boolean isIfConnected() {
-        return ifConnected;
     }
 
     /**
