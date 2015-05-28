@@ -104,12 +104,6 @@ public class LoginFragment extends Fragment {
 
         initOnClickListener();
         initFormPref();
-        initRouter();
-        if (! mPreferences.getBoolean("if_save_ip", true))
-            mHttp.setIfSaveIP(false);
-        if (! mPreferences.getBoolean("if_show_timeout", true))
-            mLayoutTimeout.setVisibility(View.GONE);
-        mHttp.getIP();
         initRestOfTime();
         initAnimation();
 
@@ -117,10 +111,22 @@ public class LoginFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        initRouter();
+        mHttp.getIP();
+        mHttp.isConnected();
+        mHttp.setIfSaveIP(mPreferences.getBoolean("if_save_ip", true));
+        if (mPreferences.getBoolean("if_show_timeout", true))
+            mLayoutTimeout.setVisibility(View.VISIBLE);
+        else
+            mLayoutTimeout.setVisibility(View.GONE);
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         restoreStateFromArguments();
-        mHttp.isConnected();
     }
 
     @Override
@@ -175,7 +181,7 @@ public class LoginFragment extends Fragment {
      * 获取路由器ip页,referer,cookie,ip匹配正则参数，并配置
      */
     private void initRouter() {
-        if (!mPreferences.getBoolean("use_router", false))
+        if (! mPreferences.getBoolean("use_router", false))
             return;
         String routerURL, routerReferer, routerCookie, routerReg;
         routerReferer = mPreferences.getString("router_referer",
@@ -247,7 +253,6 @@ public class LoginFragment extends Fragment {
      * 刷新重新获取IP
      */
     public void refreshIP() {
-        initRouter();
         mHttp.getIP();
     }
 
