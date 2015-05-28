@@ -3,8 +3,6 @@ package xyz.codeme.loginer;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import xyz.codeme.loginer.utils.CommonUtils;
 import xyz.codeme.szzn.http.HttpUtils;
 
 public class SettingsFragment extends PreferenceFragment {
@@ -52,7 +51,7 @@ public class SettingsFragment extends PreferenceFragment {
                         .setIcon(R.mipmap.ic_launcher)
                         .setTitle(String.format(
                                 getResources().getString(R.string.text_now_version),
-                                getVersionName()
+                                CommonUtils.getVersionName(getActivity())
                         ))
                         .setMessage(R.string.text_about_me)
                         .setPositiveButton(R.string.btn_ok, null)
@@ -68,7 +67,7 @@ public class SettingsFragment extends PreferenceFragment {
      * @param newVersion 从服务器获取的版本信息
      */
     private void checkUpdate(Bundle newVersion) {
-        int versionCode = getVersionCode();
+        int versionCode = CommonUtils.getVersionCode(getActivity());
         if(versionCode != 0) {
             if(versionCode < newVersion.getInt("versionCode")) {
                 String text = String.format(
@@ -96,32 +95,6 @@ public class SettingsFragment extends PreferenceFragment {
                 Toast.makeText(getActivity(), R.string.text_latest_version, Toast.LENGTH_SHORT)
                         .show();
             }
-        }
-    }
-
-    /**
-     * 获取版本号
-     * @return int 版本号
-     */
-    private int getVersionCode() {
-        try {
-            PackageInfo info = getActivity().getPackageManager()
-                    .getPackageInfo(getActivity().getPackageName(), 0);
-            return info.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    private String getVersionName() {
-        try {
-            PackageInfo info = getActivity().getPackageManager()
-                    .getPackageInfo(getActivity().getPackageName(), 0);
-            return info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return "";
         }
     }
 

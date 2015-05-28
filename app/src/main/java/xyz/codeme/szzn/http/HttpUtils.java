@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import xyz.codeme.loginer.R;
-import xyz.codeme.loginer.data.MessageBuilder;
+import xyz.codeme.loginer.utils.MessageBuilder;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -42,24 +42,30 @@ import com.android.volley.toolbox.Volley;
  * @date 2015/3
  */
 public class HttpUtils {
-    public final static int IP_FROM_SERVER = 0xac01;
-    public final static int IP_FROM_ROUTER = 0xac02;
-    public final static int CONNECTED_TRUE = 0xac11;
-    public final static int CONNECTED_FALSE = 0xac12;
-    public final static int GET_IP_SUCCESS = 0xac13;
-    public final static int LONIN_SUCCESS = 0xac14;
-    public final static int GET_ACCOUNT_SUCCESS = 0xac15;
-    public final static int GET_VERSION = 0xac16;
+    public final static int IP_FROM_SERVER      = 0xac01;
+    public final static int IP_FROM_ROUTER      = 0xac02;
+    public final static int CONNECTED_TRUE      = 0xac11;
+    public final static int CONNECTED_FALSE     = 0xac12;
+    public final static int GET_IP_SUCCESS      = 0xac13;
+    public final static int LONIN_SUCCESS       = 0xac14;
+    public final static int LONIN_FAILED        = 0xac15;
+    public final static int GET_ACCOUNT_SUCCESS = 0xac16;
+    public final static int GET_VERSION         = 0xac17;
+    public final static int REGISTER_SUCCESS    = 0xac18;
     
-    private final static String TAG = "LoggerHttp";
-    private final static String loginUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/login";
-    private final static String logoutUrl = "http://61.137.86.87:8080/portalNat444/AccessServices/logout";
-    private final static String mainUrl = "http://61.137.86.87:8080/portalNat444/index.jsp";
-    private final static String showUrl = "http://61.137.86.87:8080/portalNat444/main2.jsp";
-    // 192.168.56.1/sz/ szzn.sinaapp.com/ codeme.xyz/api/
-    private final static String saveUrl = "http://codeme.xyz/api/saveip.php";
-    private final static String getipUrl = "http://codeme.xyz/api/getip.php";
-    private final static String versionUrl = "http://codeme.xyz/api/version.php";
+    private final static String TAG             = "LoggerHttp";
+
+    private final static String szznIndexUrl = "http://61.137.86.87:8080/portalNat444";
+    private final static String loginUrl     = szznIndexUrl + "/AccessServices/login";
+    private final static String logoutUrl    = szznIndexUrl + "/AccessServices/logout";
+    private final static String mainUrl      = szznIndexUrl + "/index.jsp";
+    private final static String showUrl      = szznIndexUrl + "/main2.jsp";
+    // 192.168.56.1/sz codeme.xyz
+    private final static String apiIndexUrl  = "http://codeme.xyz/api";
+    private final static String saveUrl      = apiIndexUrl + "/saveip.php";
+    private final static String getipUrl     = apiIndexUrl + "/getip.php";
+    private final static String versionUrl   = apiIndexUrl + "/version.php";
+    private final static String registerUrl  = apiIndexUrl + "/register.php";
 
     private final Fragment fragment;
     private final Handler handler;
@@ -67,12 +73,13 @@ public class HttpUtils {
     private SparseArray<ProgressDialog> progressDialogs;
 
     private int ipAccessMethod = IP_FROM_SERVER;
-    private String routerURL = "";
+    private String routerURL     = "";
     private String routerReferer = "";
-    private String routerCookie = "";
-    private String routerReg = "";
-    private String log = "";
-    private boolean ifSaveIP = true;
+    private String routerCookie  = "";
+    private String routerReg     = "";
+    private String log           = "";
+    private boolean ifSaveIP     = true;
+    private int userID;
     private String user;
     private String password;
     private String ip;
@@ -100,6 +107,49 @@ public class HttpUtils {
         this.routerReferer = routerReferer;
         this.routerCookie = routerCookie;
         this.routerReg = routerReg;
+    }
+
+    /**
+     * 注册新用户
+     * @param versionCode 当前版本号
+     */
+    public void register(int versionCode) {
+        KeyValuePairs form = KeyValuePairs.create()
+                .add("version", versionCode);
+
+        FluentJsonRequest jsonRequest = new FluentJsonRequest(
+                HttpUtils.registerUrl,
+                form.build(),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject jsonObj) {
+                        try {
+                            int resultCode = jsonObj.getInt("code");
+                            if (resultCode == 0) {
+                                int userID = jsonObj.getInt("userID"); // 获取注册的用户id
+                                Log.i(TAG, "register:success");
+                                handler.sendMessage(MessageBuilder.simpleMessage(
+                                        REGISTER_SUCCESS,
+                                        "userID",
+                                        userID
+                                ));
+                            } else {
+                                log = resultCode + ":" + jsonObj.getString("msg");
+                                Log.w(TAG, "register:" + log);
+                            }
+                        } catch (JSONException e) {
+                            Log.e(TAG, "register:json error");
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError arg0) {
+                        Log.e(TAG, "register:connect error");
+                    }
+                });
+
+        requestQueue.add(jsonRequest);
     }
 
     /**
@@ -137,9 +187,12 @@ public class HttpUtils {
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
                             showMessage(R.string.error_login, log);
                             Log.e(TAG, "login:" + log);
+                            if (resultCode != 2) // 除用户连接已经存在情况，发送登陆失败信号
+                                handler.sendEmptyMessage(LONIN_FAILED);
                         } catch (JSONException e) {
                             Log.e(TAG, "login:json error");
                             showToast(R.string.error_login);
+                            handler.sendEmptyMessage(LONIN_FAILED);
                         } finally {
                             dismissProgress(R.string.text_loading_login);
                         }
@@ -283,7 +336,8 @@ public class HttpUtils {
     public void saveIP(String user, String IP) {
         KeyValuePairs form = KeyValuePairs.create()
                 .add("user", user)
-                .add("ip", IP);
+                .add("ip", IP)
+                .add("userID", userID);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.saveUrl,
@@ -294,7 +348,7 @@ public class HttpUtils {
                         try {
                             int resultCode = jsonObj.getInt("code");
                             if (resultCode != 0) {
-                                log = jsonObj.getInt("code") + ":" + jsonObj.getString("msg");
+                                log = resultCode + ":" + jsonObj.getString("msg");
                                 Log.w(TAG, "saveip:" + log);
                             }
                         } catch (JSONException e) {
@@ -319,7 +373,8 @@ public class HttpUtils {
      */
     public void getLastIP(String user) {
         KeyValuePairs form = KeyValuePairs.create()
-                .add("user", user);
+                .add("user", user)
+                .add("userID", userID);
 
         showProgress(R.string.text_loading_get);
 
@@ -643,5 +698,13 @@ public class HttpUtils {
 
     public void setIfSaveIP(boolean saveIP) {
         this.ifSaveIP = saveIP;
+    }
+
+    public int getUserID() {
+        return userID;
+    }
+
+    public void setUserID(int userID) {
+        this.userID = userID;
     }
 }

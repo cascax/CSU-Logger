@@ -26,6 +26,12 @@ public class KeyValuePairs
 		this.params.put(key, value);
 		return this;
 	}
+
+	public KeyValuePairs add(String key, int value)
+	{
+		this.params.put(key, Integer.toString(value));
+		return this;
+	}
 	
 	public Map<String, String> build()
 	{

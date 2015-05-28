@@ -36,6 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
+import xyz.codeme.loginer.utils.CommonUtils;
 import xyz.codeme.szzn.http.AccountInfo;
 import xyz.codeme.szzn.http.HttpUtils;
 import xyz.codeme.szzn.rsa.RSAEncrypt;
@@ -75,6 +76,7 @@ public class LoginFragment extends Fragment {
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mHandler = new MessageHandler();
         mHttp = new HttpUtils(this, mHandler);
+        initFirstOpen();
     }
 
     @Override
@@ -238,6 +240,16 @@ public class LoginFragment extends Fragment {
                 });
     }
 
+    private void initFirstOpen()
+    {
+        int userID = mPreferences.getInt("userID", 0);
+        if(userID == 0) {
+            mHttp.register(CommonUtils.getVersionCode(getActivity()));
+        } else {
+            mHttp.setUserID(userID);
+        }
+    }
+
     private void showLogoutTime(long lastLogin) {
         if(mLayoutTimeout.getVisibility() != View.VISIBLE)
             return;
@@ -359,11 +371,19 @@ public class LoginFragment extends Fragment {
                 case HttpUtils.LONIN_SUCCESS:
                     saveForm();
                     break;
+                case HttpUtils.LONIN_FAILED:
+                    mSpinnerMethod.setSelection(1);
+                    break;
                 case HttpUtils.GET_IP_SUCCESS:
                     showIP(msg.getData().getString("IP"));
                     break;
                 case HttpUtils.GET_ACCOUNT_SUCCESS:
                     showAccountInformation(new AccountInfo(msg.getData()));
+                    break;
+                case HttpUtils.REGISTER_SUCCESS:
+                    int userID = msg.getData().getInt("userID");
+                    mHttp.setUserID(userID);
+                    mPreferences.edit().putInt("userID", userID).apply();
                     break;
             }
         }
