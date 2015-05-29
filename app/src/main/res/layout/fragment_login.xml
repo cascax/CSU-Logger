@@ -29,33 +29,59 @@
                     android:id="@+id/info_remained"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="42sp"
-                    android:textColor="@color/title_primary"/>
+                    android:textSize="72sp"
+                    android:textColor="@color/title_primary" />
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginRight="20dp"
-                    android:text="@string/info_remained"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="15dp"
+                    android:orientation="vertical"
+                    android:layout_weight="0.5">
+                    <TextView
+                        android:id="@+id/info_remained_right"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text_gb"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/text_remained"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/info_remained"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/info_used"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="42sp"
+                    android:textSize="72sp"
                     android:textColor="@color/title_primary" />
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:text="@string/info_used"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="15dp"
+                    android:orientation="vertical"
+                    android:layout_weight="0.5">
+                    <TextView
+                        android:id="@+id/info_used_right"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text_gb"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/info_used"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

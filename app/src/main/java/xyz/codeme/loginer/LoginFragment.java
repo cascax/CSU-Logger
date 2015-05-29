@@ -1,8 +1,6 @@
 package xyz.codeme.loginer;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -10,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,11 +45,14 @@ public class LoginFragment extends Fragment {
     private EditText mEditIP;
     private EditText mEditAccount;
     private EditText mEditPassword;
+    private TextView mTextRemained;
     private TextView mInfoAccount;
     private TextView mInfoTime;
     private TextView mInfoUsed;
+    private TextView mInfoUsedRight;
     private TextView mInfoTotal;
     private TextView mInfoRemained;
+    private TextView mInfoRemainedRight;
     private TextView mInfoSchoolUsed;
     private TextView mInfoMoney;
     private TextView mInfoOutTime;
@@ -84,25 +84,28 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_login, parent, false);
 
-        mEditIP = (EditText) v.findViewById(R.id.edit_ip);
-        mEditAccount = (EditText) v.findViewById(R.id.edit_account);
-        mEditPassword = (EditText) v.findViewById(R.id.edit_password);
-        mSpinnerMethod = (Spinner) v.findViewById(R.id.spinner_method);
-        mCheckSave = (CheckBox) v.findViewById(R.id.check_save);
-        mButtonRefreshIP = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
-        mButtonSubmit = (Button) v.findViewById(R.id.btn_submit);
-        mLayoutAccountInfo = (LinearLayout) v.findViewById(R.id.layout_account_info);
-        mLayoutTimeout = (LinearLayout) v.findViewById(R.id.layout_timeout);
-        mLayoutAll  = (RelativeLayout) v.findViewById(R.id.layout_all);
+        mEditIP             = (EditText) v.findViewById(R.id.edit_ip);
+        mEditAccount        = (EditText) v.findViewById(R.id.edit_account);
+        mEditPassword       = (EditText) v.findViewById(R.id.edit_password);
+        mSpinnerMethod      = (Spinner) v.findViewById(R.id.spinner_method);
+        mCheckSave          = (CheckBox) v.findViewById(R.id.check_save);
+        mButtonRefreshIP    = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
+        mButtonSubmit       = (Button) v.findViewById(R.id.btn_submit);
+        mLayoutAccountInfo  = (LinearLayout) v.findViewById(R.id.layout_account_info);
+        mLayoutTimeout      = (LinearLayout) v.findViewById(R.id.layout_timeout);
+        mLayoutAll          = (RelativeLayout) v.findViewById(R.id.layout_all);
 
-        mInfoAccount = (TextView) v.findViewById(R.id.info_account);
-        mInfoTime = (TextView) v.findViewById(R.id.info_time);
-        mInfoUsed = (TextView) v.findViewById(R.id.info_used);
-        mInfoTotal = (TextView) v.findViewById(R.id.info_total);
-        mInfoRemained = (TextView) v.findViewById(R.id.info_remained);
-        mInfoSchoolUsed = (TextView) v.findViewById(R.id.info_schoolused);
-        mInfoMoney = (TextView) v.findViewById(R.id.info_money);
-        mInfoOutTime = (TextView) v.findViewById(R.id.info_timeout);
+        mTextRemained       = (TextView) v.findViewById(R.id.text_remained);
+        mInfoAccount        = (TextView) v.findViewById(R.id.info_account);
+        mInfoTime           = (TextView) v.findViewById(R.id.info_time);
+        mInfoUsed           = (TextView) v.findViewById(R.id.info_used);
+        mInfoUsedRight      = (TextView) v.findViewById(R.id.info_used_right);
+        mInfoTotal          = (TextView) v.findViewById(R.id.info_total);
+        mInfoRemained       = (TextView) v.findViewById(R.id.info_remained);
+        mInfoRemainedRight  = (TextView) v.findViewById(R.id.info_remained_right);
+        mInfoSchoolUsed     = (TextView) v.findViewById(R.id.info_schoolused);
+        mInfoMoney          = (TextView) v.findViewById(R.id.info_money);
+        mInfoOutTime        = (TextView) v.findViewById(R.id.info_timeout);
 
         initOnClickListener();
         initFormPref();
@@ -304,20 +307,46 @@ public class LoginFragment extends Fragment {
         showLogoutTime(mLastLoginTime);
     }
 
+    /**
+     * 计算显示账户信息并显示
+     * @param accountInfo 账户信息
+     */
     public void showAccountInformation(AccountInfo accountInfo) {
         this.mAccountInfo = accountInfo;
+        accountInfo.setFlowUnit(AccountInfo.USE_GB);
+        // 超出显示超出流量，未超出显示剩余流量
+        if(accountInfo.getPublicRemained() <= 0.001) {
+            double beyondFlow = accountInfo.getPublicUsed() - accountInfo.getPublicTotal();
+            showFlow(mInfoRemained, mInfoRemainedRight, beyondFlow);
+            mTextRemained.setText(R.string.info_beyond);
+        } else {
+            showFlow(mInfoRemained, mInfoRemainedRight, accountInfo.getPublicRemained());
+            mTextRemained.setText(R.string.info_remained);
+        }
+
+        showFlow(mInfoUsed, mInfoUsedRight, accountInfo.getPublicUsed());
+        mInfoTotal.setText(Double.toString(accountInfo.getPublicTotal()) + " GB");
         mInfoAccount.setText(accountInfo.getUser());
-        mInfoRemained.setText(Double.toString(
-                Math.round(accountInfo.getPublicRemained() / 10.24) / 100.0));
-        mInfoUsed.setText(Double.toString(
-                Math.round(accountInfo.getPublicUsed() / 10.24) / 100.0));
-        mInfoTotal.setText(Double.toString(
-                Math.round(accountInfo.getPublicTotal() / 10.24) / 100.0) + " GB");
-        mInfoMoney.setText(Double.toString(accountInfo.getAccount()));
-        mInfoSchoolUsed.setText(Double.toString(accountInfo.getSchoolUsed()) + " MB");
+        mInfoMoney.setText(Double.toString(accountInfo.getAccount()) + " 元");
+        mInfoSchoolUsed.setText(Double.toString(accountInfo.getSchoolUsed()) + " GB");
         mInfoTime.setText(accountInfo.getTime());
 
         mLayoutAccountInfo.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 分两部分显示流量
+     * @param left  正数部分View
+     * @param right 小数部分View
+     * @param flow  流量
+     */
+    private void showFlow(TextView left, TextView right, double flow) {
+        left.setText(Integer.toString((int)flow));
+        right.setText(
+                "."
+                + Integer.toString((int)(flow * 100) % 100)
+                + " GB"
+        );
     }
 
     public void showIP(String ip) {

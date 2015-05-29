@@ -5,15 +5,17 @@
     <string name="text_password">密码</string>
     <string name="text_ip">IP</string>
     <string name="text_save">自动保存</string>
+    <string name="text_gb">GB</string>
 
     <string name="info_account">用户</string>
     <string name="info_time">截止至</string>
     <!--总流量(公网)-->
     <string name="info_total">总流量</string>
     <!--已用流量(公网)-->
-    <string name="info_used">GB 已用</string>
+    <string name="info_used">已用</string>
     <!--剩余流量(公网)-->
-    <string name="info_remained">GB 剩余</string>
+    <string name="info_remained">剩余</string>
+    <string name="info_beyond">超出</string>
     <!--校园网已用流量-->
     <string name="info_schoolused">校园网已用</string>
     <string name="info_money">余额</string>

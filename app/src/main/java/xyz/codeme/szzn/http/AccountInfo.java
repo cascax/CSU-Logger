@@ -8,12 +8,14 @@ import org.json.JSONObject;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AccountInfo {
+    public final static int USE_MB = 0x0506;
+    public final static int USE_GB = 0x0625;
+
+    private int flowUnit = USE_MB;
+
     private String user = "";           // 用户名
     private Calendar time = null;       // 截止日期
     private String timeStr = null;      // 截止日期字符串形式
@@ -93,23 +95,52 @@ public class AccountInfo {
         return timeStr;
     }
 
+    /**
+     * 转换流量单位MB到GB 保留两位小数
+     * @param flow 流量MB
+     * @return 流量GB
+     */
+    private double translateMBtoGB(double flow) {
+        return Math.round(flow / 10.24) / 100.0;
+    }
+
     public double getPublicTotal() {
+        if(flowUnit == USE_GB) {
+            return translateMBtoGB(publicTotal);
+        }
         return publicTotal;
     }
 
     public double getPublicUsed() {
+        if(flowUnit == USE_GB) {
+            return translateMBtoGB(publicUsed);
+        }
         return publicUsed;
     }
 
     public double getPublicRemained() {
+        if(flowUnit == USE_GB) {
+            return translateMBtoGB(publicRemained);
+        }
         return publicRemained;
     }
 
     public double getSchoolUsed() {
+        if(flowUnit == USE_GB) {
+            return translateMBtoGB(schoolUsed);
+        }
         return schoolUsed;
     }
 
     public double getAccount() {
         return account;
+    }
+
+    public void setFlowUnit(int flowUnit) {
+        this.flowUnit = flowUnit;
+    }
+
+    public int getFlowUnit() {
+        return flowUnit;
     }
 }
