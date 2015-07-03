@@ -1,10 +1,10 @@
-## CSU-Logger
+# CSU-Logger
 
 中南大学数字中南安卓端登录器。欢迎来一起完善。
 
 ## 下载
 
-安装包：<http://pan.baidu.com/s/1kTxf4cJ#path=%252FCSU-Loginer>
+安装包：<http://pan.baidu.com/s/1kTxf4cJ>
 
 ## 特点
 

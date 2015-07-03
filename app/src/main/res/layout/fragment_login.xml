@@ -1,215 +1,214 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_all"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <RelativeLayout
-        android:id="@+id/layout_all"
+    <LinearLayout
+        android:id="@+id/layout_account_info"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:theme="@style/AccountInfo"
+        android:visibility="gone">
 
         <LinearLayout
-            android:id="@+id/layout_account_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:theme="@style/AccountInfo"
-            android:visibility="gone">
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/info_remained"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="72sp"
+                android:textColor="@color/title_primary" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
-
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="15dp"
+                android:orientation="vertical"
+                android:layout_weight="0.5">
                 <TextView
-                    android:id="@+id/info_remained"
+                    android:id="@+id/info_remained_right"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="72sp"
-                    android:textColor="@color/title_primary" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="15dp"
-                    android:orientation="vertical"
-                    android:layout_weight="0.5">
-                    <TextView
-                        android:id="@+id/info_remained_right"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text_gb"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:id="@+id/text_remained"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/info_remained"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
+                    android:text="@string/text_gb"
+                    android:textSize="16sp" />
                 <TextView
-                    android:id="@+id/info_used"
+                    android:id="@+id/text_remained"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="72sp"
-                    android:textColor="@color/title_primary" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="15dp"
-                    android:orientation="vertical"
-                    android:layout_weight="0.5">
-                    <TextView
-                        android:id="@+id/info_used_right"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text_gb"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/info_used"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
-
+                    android:text="@string/info_remained"
+                    android:textSize="14sp" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginRight="12dp"
-                    android:text="@string/info_account"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/info_account"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="25dp"
-                    android:layout_marginStart="25dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/info_money"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/info_money"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/info_used"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/info_total"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/info_total"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/info_schoolused"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/info_schoolused"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
+                android:textSize="72sp"
+                android:textColor="@color/title_primary" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="6dp"
-                android:gravity="end">
-
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="15dp"
+                android:orientation="vertical"
+                android:layout_weight="0.5">
+                <TextView
+                    android:id="@+id/info_used_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_gb"
+                    android:textSize="16sp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/info_time"
-                    android:textSize="16sp" />
+                    android:text="@string/info_used"
+                    android:textSize="14sp" />
 
-                <TextView
-                    android:id="@+id/info_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" />
             </LinearLayout>
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/layout_timeout"
-            android:layout_below="@+id/layout_account_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
+                android:text="@string/info_account"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/info_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginStart="25dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:text="@string/info_money"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/info_money"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            android:theme="@style/AccountInfo"
-            android:gravity="end">
+            android:layout_marginTop="6dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
-                android:text="@string/info_timeout"
+                android:text="@string/info_total"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/info_timeout"
+                android:id="@+id/info_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:text="@string/info_none"/>
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:text="@string/info_schoolused"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/info_schoolused"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
         </LinearLayout>
 
+
         <LinearLayout
-            android:layout_below="@+id/layout_timeout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:gravity="end">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/info_time"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/info_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_timeout"
+        android:layout_below="@+id/layout_account_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:theme="@style/AccountInfo"
+        android:gravity="end">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="@string/info_timeout"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/info_timeout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/info_none"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_timeout">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -290,11 +289,12 @@
                 android:text="@string/btn_text_submit"
                 android:textSize="20sp"
                 android:textColor="@color/title_primary"
-                android:layout_marginTop="15dp" />
+                android:layout_marginTop="10dp" />
 
         </LinearLayout>
+    </ScrollView>
 
-    </RelativeLayout>
+</RelativeLayout>
 
 
-</ScrollView>
+
