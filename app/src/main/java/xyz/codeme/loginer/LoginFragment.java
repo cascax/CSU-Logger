@@ -107,10 +107,13 @@ public class LoginFragment extends Fragment {
         mInfoMoney          = (TextView) v.findViewById(R.id.info_money);
         mInfoOutTime        = (TextView) v.findViewById(R.id.info_timeout);
 
-        initOnClickListener();
+        initViewsListener();
         initFormPref();
         initRestOfTime();
         initAnimation();
+        initRouter();
+        mHttp.getIP();
+        mHttp.isConnected();
 
         return v;
     }
@@ -118,9 +121,6 @@ public class LoginFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        initRouter();
-        mHttp.getIP();
-        mHttp.isConnected();
         mHttp.setIfSaveIP(mPreferences.getBoolean("if_save_ip", true));
         if (mPreferences.getBoolean("if_show_timeout", true))
             mLayoutTimeout.setVisibility(View.VISIBLE);
@@ -162,7 +162,7 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    public void initOnClickListener() {
+    private void initViewsListener() {
         mButtonRefreshIP.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -177,7 +177,7 @@ public class LoginFragment extends Fragment {
         });
     }
 
-    public void initFormPref() {
+    private void initFormPref() {
         mEditAccount.setText(mPreferences.getString("user", ""));
         mEditPassword.setText(mPreferences.getString("password", ""));
     }
@@ -295,7 +295,7 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    public void saveForm() {
+    private void saveForm() {
         SharedPreferences.Editor editor = mPreferences.edit();
         mLastLoginTime = Calendar.getInstance().getTimeInMillis();
         editor.putLong("lastLogin", mLastLoginTime);
@@ -311,7 +311,7 @@ public class LoginFragment extends Fragment {
      * 计算显示账户信息并显示
      * @param accountInfo 账户信息
      */
-    public void showAccountInformation(AccountInfo accountInfo) {
+    private void showAccountInformation(AccountInfo accountInfo) {
         this.mAccountInfo = accountInfo;
         accountInfo.setFlowUnit(AccountInfo.USE_GB);
         // 超出显示超出流量，未超出显示剩余流量
@@ -349,7 +349,7 @@ public class LoginFragment extends Fragment {
         );
     }
 
-    public void showIP(String ip) {
+    private void showIP(String ip) {
         mEditIP.setText(ip);
     }
 
