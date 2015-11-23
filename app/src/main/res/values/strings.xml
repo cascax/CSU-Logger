@@ -48,6 +48,7 @@
     <string name="error_nowifi">没有连接WiFi</string>
     <string name="error_update">服务器连接失败</string>
     <string name="msg_online">已经在线，无法获取IP</string>
+    <string name="msg_open_network">请打开手机网络</string>
 
     <string name="increment_url">http://hn.189.cn/hnselfservice/topup/topup!topupIndex.action?isCorp=0</string>
 </resources>

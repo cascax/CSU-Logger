@@ -7,8 +7,8 @@ android {
         applicationId 'xyz.codeme.loginer'
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 13
-        versionName "0.7.4"
+        versionCode 14
+        versionName "0.7.5"
     }
     buildTypes {
         release {

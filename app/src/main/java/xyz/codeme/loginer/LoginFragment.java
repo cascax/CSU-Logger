@@ -369,6 +369,7 @@ public class LoginFragment extends Fragment {
                 startActivity(settings);
                 return true;
             case R.id.action_ip:
+                mHttp.closeWifi();
                 mHttp.getLastIP(mEditAccount.getText().toString());
                 mSpinnerMethod.setSelection(2);
                 return true;
@@ -405,6 +406,10 @@ public class LoginFragment extends Fragment {
                     break;
                 case HttpUtils.GET_IP_SUCCESS:
                     showIP(msg.getData().getString("IP"));
+                    break;
+                case HttpUtils.GET_LAST_IP_SUCCESS:
+                    showIP(msg.getData().getString("IP"));
+                    mHttp.openWifi();
                     break;
                 case HttpUtils.GET_ACCOUNT_SUCCESS:
                     showAccountInformation(new AccountInfo(msg.getData()));

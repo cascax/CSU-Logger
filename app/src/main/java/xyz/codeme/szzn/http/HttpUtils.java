@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import xyz.codeme.loginer.LoginFragment;
 import xyz.codeme.loginer.R;
 import xyz.codeme.loginer.utils.MessageBuilder;
 
@@ -17,6 +18,8 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -52,6 +55,7 @@ public class HttpUtils {
     public final static int GET_ACCOUNT_SUCCESS = 0xac16;
     public final static int GET_VERSION         = 0xac17;
     public final static int REGISTER_SUCCESS    = 0xac18;
+    public final static int GET_LAST_IP_SUCCESS = 0xac19;
     
     private final static String TAG             = "LoggerHttp";
 
@@ -60,8 +64,8 @@ public class HttpUtils {
     private final static String logoutUrl    = szznIndexUrl + "/AccessServices/logout";
     private final static String mainUrl      = szznIndexUrl + "/index.jsp";
     private final static String showUrl      = szznIndexUrl + "/main2.jsp";
-    // 192.168.56.1/sz codeme.xyz
-    private final static String apiIndexUrl  = "http://codeme.xyz/api";
+    // 192.168.56.1/sz mccode.net
+    private final static String apiIndexUrl  = "http://mccode.net/api";
     private final static String saveUrl      = apiIndexUrl + "/saveip.php";
     private final static String getipUrl     = apiIndexUrl + "/getip.php";
     private final static String versionUrl   = apiIndexUrl + "/version.php";
@@ -372,52 +376,99 @@ public class HttpUtils {
      * @param user 要获取IP的用户
      */
     public void getLastIP(String user) {
-        KeyValuePairs form = KeyValuePairs.create()
-                .add("user", user)
-                .add("userID", userID);
-
         showProgress(R.string.text_loading_get);
+        Thread thread = new Thread(new GetLastIP(this.handler, user));
+        thread.start();
+    }
 
-        FluentJsonRequest jsonRequest = new FluentJsonRequest(
-                HttpUtils.getipUrl,
-                form.build(),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject jsonObj) {
-                        try {
-                            int resultCode = jsonObj.getInt("code");
-                            if (resultCode == 0) {
-                                String ip = jsonObj.getString("ip");
+    public void closeWifi() {
+        WifiManager wifiManager;
+        wifiManager = (WifiManager) fragment.getActivity().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(false);
+        }
+        // 等待WiFi关闭
+        while(wifiManager.getWifiState() != WifiManager.WIFI_STATE_DISABLED);
+
+        // 查看网络状态
+        ConnectivityManager connectMgr = (ConnectivityManager) fragment.getActivity()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = connectMgr.getActiveNetworkInfo();
+        int inc = 0;
+        while(info == null) {
+            if(inc++ == 200) {
+                break;
+            }
+            info = connectMgr.getActiveNetworkInfo();
+        }
+    }
+
+    public void openWifi() {
+        WifiManager wifiManager;
+        wifiManager = (WifiManager) fragment.getActivity().getSystemService(Context.WIFI_SERVICE);
+        if (!wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(true);
+        }
+    }
+
+    private class GetLastIP implements Runnable {
+        private Handler handler;
+        private String user;
+        public GetLastIP(Handler handler, String user) {
+            this.handler = handler;
+            this.user = user;
+        }
+        @Override
+        public void run() {
+            // 关闭Wifi
+//            closeWifi();
+//            showToast(R.string.msg_open_network);
+
+            KeyValuePairs form = KeyValuePairs.create()
+                    .add("user", this.user)
+                    .add("userID", userID);
+
+            FluentJsonRequest jsonRequest = new FluentJsonRequest(
+                    HttpUtils.getipUrl,
+                    form.build(),
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject jsonObj) {
+                            try {
+                                int resultCode = jsonObj.getInt("code");
+                                if (resultCode == 0) {
+                                    String ip = jsonObj.getString("ip");
 //                				String time = jsonObj.getString("time");
-                                handler.sendMessage(MessageBuilder.simpleMessage(
-                                        GET_IP_SUCCESS,
-                                        "IP",
-                                        ip
-                                ));
-                                showToast(R.string.success_last_ip);
-                            } else {
-                                log = resultCode + ":" + jsonObj.getString("msg");
-                                Log.e(TAG, "getlastip:" + log);
-                                showMessage(R.string.error_ip, jsonObj.getString("msg"));
+                                    handler.sendMessage(MessageBuilder.simpleMessage(
+                                            GET_LAST_IP_SUCCESS,
+                                            "IP",
+                                            ip
+                                    ));
+                                    showToast(R.string.success_last_ip);
+                                } else {
+                                    log = resultCode + ":" + jsonObj.getString("msg");
+                                    Log.e(TAG, "getlastip:" + log);
+                                    showMessage(R.string.error_ip, jsonObj.getString("msg"));
+                                }
+                            } catch (JSONException e) {
+                                Log.e(TAG, "getlastip:json error");
+                                showToast(R.string.error_ip);
+                            } finally {
+                                dismissProgress(R.string.text_loading_get);
                             }
-                        } catch (JSONException e) {
-                            Log.e(TAG, "getlastip:json error");
-                            showToast(R.string.error_ip);
-                        } finally {
-                            dismissProgress(R.string.text_loading_get);
                         }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError arg0) {
-                        dismissProgress(R.string.text_loading_get);
-                        Log.e(TAG, "getlastip:connect error");
-                        showToast(R.string.error_ip);
-                    }
-                });
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError arg0) {
+                            dismissProgress(R.string.text_loading_get);
+                            Log.e(TAG, "getlastip:connect error");
+                            showToast(R.string.error_ip);
+                        }
+                    });
 
-        requestQueue.add(jsonRequest);
+            requestQueue.add(jsonRequest);
+        }
     }
 
     /**
@@ -436,6 +487,9 @@ public class HttpUtils {
         }
     }
 
+    /**
+     * 在线检测
+     */
     private class ConnectCheck implements Runnable {
         private Handler handler;
         public ConnectCheck(Handler handler) {
