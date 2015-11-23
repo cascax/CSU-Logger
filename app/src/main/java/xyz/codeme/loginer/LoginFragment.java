@@ -57,6 +57,7 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     private TextView mInfoSchoolUsed;
     private TextView mInfoMoney;
     private TextView mInfoOutTime;
+    private TextView mTextRefresh;
     private CheckBox mCheckSave;
     private ImageButton mButtonRefreshIP;
     private SwipeRefreshLayout mLayoutRefresh;
@@ -77,7 +78,6 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mHandler = new MessageHandler();
         mHttp = new HttpUtils(this, mHandler);
-        initFirstOpen();
     }
 
     @Override
@@ -107,7 +107,9 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         mInfoSchoolUsed     = (TextView) v.findViewById(R.id.info_schoolused);
         mInfoMoney          = (TextView) v.findViewById(R.id.info_money);
         mInfoOutTime        = (TextView) v.findViewById(R.id.info_timeout);
+        mTextRefresh        = (TextView) v.findViewById(R.id.text_refresh);
 
+        initFirstOpen();
         initViewsListener();
         initFormPref();
         initRestOfTime();
@@ -263,6 +265,7 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     {
         int userID = mPreferences.getInt("userID", 0);
         if(userID == 0) {
+            mTextRefresh.setVisibility(View.VISIBLE);
             mHttp.register(CommonUtils.getVersionCode(getActivity()));
         } else {
             mHttp.setUserID(userID);
@@ -319,8 +322,8 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         SharedPreferences.Editor editor = mPreferences.edit();
         mLastLoginTime = Calendar.getInstance().getTimeInMillis();
         editor.putLong("lastLogin", mLastLoginTime);
+        editor.putString("user", mEditAccount.getText().toString());
         if (mCheckSave.isChecked()) {
-            editor.putString("user", mEditAccount.getText().toString());
             editor.putString("password", mEditPassword.getText().toString());
         }
         editor.apply();
