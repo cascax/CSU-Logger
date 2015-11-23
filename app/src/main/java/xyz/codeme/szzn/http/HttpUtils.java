@@ -56,6 +56,8 @@ public class HttpUtils {
     public final static int GET_VERSION         = 0xac17;
     public final static int REGISTER_SUCCESS    = 0xac18;
     public final static int GET_LAST_IP_SUCCESS = 0xac19;
+    public final static int END_LOADING         = 0xac20;
+    public final static int START_LOADING       = 0xac21;
     
     private final static String TAG             = "LoggerHttp";
 
@@ -168,7 +170,7 @@ public class HttpUtils {
         KeyValuePairs headers = KeyValuePairs.create()
                 .add("Referer", HttpUtils.mainUrl);
 
-        showProgress(R.string.text_loading_login);
+//        showProgress(R.string.text_loading_login);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.loginUrl,
@@ -235,7 +237,7 @@ public class HttpUtils {
         KeyValuePairs headers = KeyValuePairs.create()
                 .add("Referer", HttpUtils.showUrl);
 
-        showProgress(R.string.text_loading_logout);
+//        showProgress(R.string.text_loading_logout);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.logoutUrl,
@@ -280,6 +282,7 @@ public class HttpUtils {
      * 下线函数的回调函数
      */
     private void logoutSuccess() {
+        handler.sendEmptyMessage(START_LOADING);
         login(user, password, ip);
     }
 
@@ -525,6 +528,9 @@ public class HttpUtils {
         new Thread(new ConnectCheck(handler)).start();
     }
 
+    /**
+     * 检查是否有更新
+     */
     public void checkUpdate() {
         showProgress(R.string.text_loading_update);
 
@@ -689,6 +695,7 @@ public class HttpUtils {
             if(progressDialog.isShowing()) progressDialog.dismiss();
             progressDialogs.remove(resourceId);
         }
+        handler.sendEmptyMessage(END_LOADING);
     }
 
     /**

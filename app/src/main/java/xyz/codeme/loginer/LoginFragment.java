@@ -4,10 +4,12 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,7 +21,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -38,7 +39,7 @@ import xyz.codeme.szzn.http.AccountInfo;
 import xyz.codeme.szzn.http.HttpUtils;
 import xyz.codeme.szzn.rsa.RSAEncrypt;
 
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "LoginerLogin";
 
     private Spinner mSpinnerMethod;
@@ -58,7 +59,7 @@ public class LoginFragment extends Fragment {
     private TextView mInfoOutTime;
     private CheckBox mCheckSave;
     private ImageButton mButtonRefreshIP;
-    private Button mButtonSubmit;
+    private SwipeRefreshLayout mLayoutRefresh;
     private LinearLayout mLayoutAccountInfo;
     private LinearLayout mLayoutTimeout;
     private RelativeLayout mLayoutAll;
@@ -90,10 +91,10 @@ public class LoginFragment extends Fragment {
         mSpinnerMethod      = (Spinner) v.findViewById(R.id.spinner_method);
         mCheckSave          = (CheckBox) v.findViewById(R.id.check_save);
         mButtonRefreshIP    = (ImageButton) v.findViewById(R.id.btn_refresh_ip);
-        mButtonSubmit       = (Button) v.findViewById(R.id.btn_submit);
         mLayoutAccountInfo  = (LinearLayout) v.findViewById(R.id.layout_account_info);
         mLayoutTimeout      = (LinearLayout) v.findViewById(R.id.layout_timeout);
         mLayoutAll          = (RelativeLayout) v.findViewById(R.id.layout_all);
+        mLayoutRefresh      = (SwipeRefreshLayout) v.findViewById(R.id.refresh_layout);
 
         mTextRemained       = (TextView) v.findViewById(R.id.text_remained);
         mInfoAccount        = (TextView) v.findViewById(R.id.info_account);
@@ -169,12 +170,15 @@ public class LoginFragment extends Fragment {
                 refreshIP();
             }
         });
-        mButtonSubmit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submit();
-            }
-        });
+        mLayoutRefresh.setOnRefreshListener(this);
+    }
+
+    /**
+     * SwipeRefreshLayout刷新事件
+     */
+    @Override
+    public void onRefresh() {
+        submit();
     }
 
     private void initFormPref() {
@@ -219,6 +223,9 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    /**
+     * 初始化动画、界面
+     */
     private void initAnimation() {
         // 用户信息面板进入动画
         mLayoutAccountInfo.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -236,11 +243,20 @@ public class LoginFragment extends Fragment {
                         );
                         translateAnimation.setDuration(600);
                         mLayoutAll.setAnimation(translateAnimation);
-                        if(mLayoutAccountInfo.getVisibility() != View.GONE)
+                        if (mLayoutAccountInfo.getVisibility() != View.GONE)
                             mLayoutAccountInfo.getViewTreeObserver()
                                     .removeGlobalOnLayoutListener(this);
                     }
                 });
+        // 下拉刷新颜色
+        mLayoutRefresh.setColorSchemeResources(android.R.color.holo_blue_light,
+                android.R.color.holo_green_light, android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+        if(Build.VERSION.SDK_INT >= 21 ) {
+            mLayoutTimeout.setElevation(8);
+            mLayoutAccountInfo.setElevation(8);
+            mButtonRefreshIP.setElevation(5);
+        }
     }
 
     private void initFirstOpen()
@@ -253,6 +269,10 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    /**
+     * 展示掉线时间
+     * @param lastLogin 上次登录时间戳
+     */
     private void showLogoutTime(long lastLogin) {
         if(mLayoutTimeout.getVisibility() != View.VISIBLE)
             return;
@@ -418,6 +438,12 @@ public class LoginFragment extends Fragment {
                     int userID = msg.getData().getInt("userID");
                     mHttp.setUserID(userID);
                     mPreferences.edit().putInt("userID", userID).apply();
+                    break;
+                case HttpUtils.START_LOADING:
+                    mLayoutRefresh.setRefreshing(true);
+                    break;
+                case HttpUtils.END_LOADING:
+                    mLayoutRefresh.setRefreshing(false);
                     break;
             }
         }

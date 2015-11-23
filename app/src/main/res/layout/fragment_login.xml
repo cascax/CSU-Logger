@@ -204,10 +204,14 @@
             android:text="@string/info_none"/>
     </LinearLayout>
 
-    <ScrollView
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/layout_timeout">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -235,15 +239,30 @@
                 android:layout_marginTop="10dp" />
 
 
-            <EditText
-                android:id="@+id/edit_password"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/text_password"
-                android:ems="10"
-                android:inputType="textPassword"
-                android:textSize="18sp"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="10dp">
+
+                <EditText
+                    android:id="@+id/edit_password"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/text_password"
+                    android:ems="10"
+                    android:inputType="textPassword"
+                    android:textSize="18sp"/>
+
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_save"
+                    android:id="@+id/check_save"
+                    android:checked="true"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -273,26 +292,9 @@
 
             </LinearLayout>
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/text_save"
-                android:id="@+id/check_save"
-                android:checked="true"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/btn_submit"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:padding="10dp"
-                android:text="@string/btn_text_submit"
-                android:textSize="20sp"
-                android:textColor="@color/title_primary"
-                android:layout_marginTop="10dp" />
-
         </LinearLayout>
     </ScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>
 
