@@ -50,14 +50,15 @@ public class HttpUtils {
     public final static int CONNECTED_TRUE      = 0xac11;
     public final static int CONNECTED_FALSE     = 0xac12;
     public final static int GET_IP_SUCCESS      = 0xac13;
-    public final static int LONIN_SUCCESS       = 0xac14;
-    public final static int LONIN_FAILED        = 0xac15;
+    public final static int LOGIN_SUCCESS       = 0xac14;
+    public final static int LOGIN_FAILED        = 0xac15;
     public final static int GET_ACCOUNT_SUCCESS = 0xac16;
     public final static int GET_VERSION         = 0xac17;
     public final static int REGISTER_SUCCESS    = 0xac18;
     public final static int GET_LAST_IP_SUCCESS = 0xac19;
     public final static int END_LOADING         = 0xac20;
     public final static int START_LOADING       = 0xac21;
+    public final static int LOGOUT_SUCCESS      = 0xac22;
     
     private final static String TAG             = "LoggerHttp";
 
@@ -171,6 +172,7 @@ public class HttpUtils {
                 .add("Referer", HttpUtils.mainUrl);
 
 //        showProgress(R.string.text_loading_login);
+        handler.sendEmptyMessage(START_LOADING);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.loginUrl,
@@ -187,18 +189,18 @@ public class HttpUtils {
                                 getInformation(jsonObj);
                                 if(ifSaveIP)
                                     saveIP(user, IP);
-                                handler.sendEmptyMessage(LONIN_SUCCESS);
+                                handler.sendEmptyMessage(LOGIN_SUCCESS);
                                 return;
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
                             showMessage(R.string.error_login, log);
                             Log.e(TAG, "login:" + log);
                             if (resultCode != 2) // 除用户连接已经存在情况，发送登陆失败信号
-                                handler.sendEmptyMessage(LONIN_FAILED);
+                                handler.sendEmptyMessage(LOGIN_FAILED);
                         } catch (JSONException e) {
                             Log.e(TAG, "login:json error");
                             showToast(R.string.error_login);
-                            handler.sendEmptyMessage(LONIN_FAILED);
+                            handler.sendEmptyMessage(LOGIN_FAILED);
                         } finally {
                             dismissProgress(R.string.text_loading_login);
                         }
@@ -238,6 +240,7 @@ public class HttpUtils {
                 .add("Referer", HttpUtils.showUrl);
 
 //        showProgress(R.string.text_loading_logout);
+        handler.sendEmptyMessage(START_LOADING);
 
         FluentJsonRequest jsonRequest = new FluentJsonRequest(
                 HttpUtils.logoutUrl,
@@ -252,6 +255,7 @@ public class HttpUtils {
                                 showToast(R.string.success_logout);
                                 Log.i(TAG, "logout:success");
                                 if(callback) logoutSuccess(); // 回调，用来重新登陆
+                                else handler.sendEmptyMessage(LOGOUT_SUCCESS);
                                 return;
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
@@ -282,7 +286,6 @@ public class HttpUtils {
      * 下线函数的回调函数
      */
     private void logoutSuccess() {
-        handler.sendEmptyMessage(START_LOADING);
         login(user, password, ip);
     }
 

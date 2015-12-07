@@ -421,11 +421,14 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
                         submit();
                     }
                     break;
-                case HttpUtils.LONIN_SUCCESS:
+                case HttpUtils.LOGIN_SUCCESS:
                     saveForm();
                     break;
-                case HttpUtils.LONIN_FAILED:
+                case HttpUtils.LOGIN_FAILED:
                     mSpinnerMethod.setSelection(1);
+                    break;
+                case HttpUtils.LOGOUT_SUCCESS:
+                    mHttp.getIP();
                     break;
                 case HttpUtils.GET_IP_SUCCESS:
                     showIP(msg.getData().getString("IP"));
@@ -443,7 +446,8 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
                     mPreferences.edit().putInt("userID", userID).apply();
                     break;
                 case HttpUtils.START_LOADING:
-                    mLayoutRefresh.setRefreshing(true);
+                    if(!mLayoutRefresh.isRefreshing())
+                        mLayoutRefresh.setRefreshing(true);
                     break;
                 case HttpUtils.END_LOADING:
                     mLayoutRefresh.setRefreshing(false);
