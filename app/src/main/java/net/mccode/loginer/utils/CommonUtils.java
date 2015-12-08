@@ -1,4 +1,4 @@
-package xyz.codeme.loginer.utils;
+package net.mccode.loginer.utils;
 
 import android.app.Activity;
 import android.content.pm.PackageInfo;

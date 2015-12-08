@@ -1,4 +1,4 @@
-package xyz.codeme.loginer.utils;
+package net.mccode.loginer.utils;
 
 import android.os.Bundle;
 import android.os.Message;

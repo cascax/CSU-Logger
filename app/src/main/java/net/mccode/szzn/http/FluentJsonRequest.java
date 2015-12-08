@@ -1,4 +1,4 @@
-package xyz.codeme.szzn.http;
+package net.mccode.szzn.http;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;

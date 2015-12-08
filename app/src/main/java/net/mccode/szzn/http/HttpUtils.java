@@ -1,4 +1,4 @@
-package xyz.codeme.szzn.http;
+package net.mccode.szzn.http;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -9,9 +9,8 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import xyz.codeme.loginer.LoginFragment;
-import xyz.codeme.loginer.R;
-import xyz.codeme.loginer.utils.MessageBuilder;
+import net.mccode.loginer.R;
+import net.mccode.loginer.utils.MessageBuilder;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -254,8 +253,10 @@ public class HttpUtils {
                                 log = parseCode(resultCode);
                                 showToast(R.string.success_logout);
                                 Log.i(TAG, "logout:success");
-                                if(callback) logoutSuccess(); // 回调，用来重新登陆
-                                else handler.sendEmptyMessage(LOGOUT_SUCCESS);
+                                if(callback)
+                                    logoutSuccess(); // 回调，用来重新登陆
+                                else
+                                    handler.sendEmptyMessage(LOGOUT_SUCCESS);
                                 return;
                             }
                             log = parseCode(resultCode) + " " + jsonObj.getString("resultDescribe");
@@ -427,7 +428,7 @@ public class HttpUtils {
         @Override
         public void run() {
             // 关闭Wifi
-//            closeWifi();
+            closeWifi();
 //            showToast(R.string.msg_open_network);
 
             KeyValuePairs form = KeyValuePairs.create()

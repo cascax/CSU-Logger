@@ -1,4 +1,4 @@
-package xyz.codeme.loginer;
+package net.mccode.loginer;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -11,12 +11,11 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import xyz.codeme.loginer.utils.CommonUtils;
-import xyz.codeme.szzn.http.HttpUtils;
+import net.mccode.loginer.utils.CommonUtils;
+import net.mccode.szzn.http.HttpUtils;
 
 public class SettingsFragment extends PreferenceFragment {
     private Handler mHandle;

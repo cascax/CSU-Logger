@@ -1,4 +1,4 @@
-package xyz.codeme.loginer;
+package net.mccode.loginer;
 
 import android.app.Fragment;
 import android.content.Intent;
@@ -34,10 +34,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
-import xyz.codeme.loginer.utils.CommonUtils;
-import xyz.codeme.szzn.http.AccountInfo;
-import xyz.codeme.szzn.http.HttpUtils;
-import xyz.codeme.szzn.rsa.RSAEncrypt;
+import net.mccode.loginer.utils.CommonUtils;
+import net.mccode.szzn.http.AccountInfo;
+import net.mccode.szzn.http.HttpUtils;
+import net.mccode.szzn.rsa.RSAEncrypt;
 
 public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "LoginerLogin";
@@ -70,6 +70,7 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     private long mLastLoginTime;
     private AccountInfo mAccountInfo;
     private Handler mHandler;
+    private boolean mIfPaused = false; // 是否经历过pause状态
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -124,11 +125,22 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     @Override
     public void onResume() {
         super.onResume();
-        mHttp.setIfSaveIP(mPreferences.getBoolean("if_save_ip", true));
+        // 刷新设置
+        mHttp.setIfSaveIP(mPreferences.getBoolean("if_save_ip", true)); // 保存IP设置
+        // 是否展示下线时间
         if (mPreferences.getBoolean("if_show_timeout", true))
             mLayoutTimeout.setVisibility(View.VISIBLE);
         else
             mLayoutTimeout.setVisibility(View.GONE);
+        // 重置路由设置
+        if(mIfPaused)
+            initRouter();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mIfPaused = true;
     }
 
     @Override
@@ -392,7 +404,6 @@ public class LoginFragment extends Fragment implements SwipeRefreshLayout.OnRefr
                 startActivity(settings);
                 return true;
             case R.id.action_ip:
-                mHttp.closeWifi();
                 mHttp.getLastIP(mEditAccount.getText().toString());
                 mSpinnerMethod.setSelection(2);
                 return true;

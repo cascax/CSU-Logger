@@ -1,4 +1,4 @@
-package xyz.codeme.szzn.rsa;
+package net.mccode.szzn.rsa;
 
 import java.util.Arrays;
 
